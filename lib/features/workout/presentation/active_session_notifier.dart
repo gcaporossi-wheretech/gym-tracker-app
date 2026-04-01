@@ -136,6 +136,69 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     _save();
   }
 
+  /// Undo: segna serie come non completata
+  void undoSet({required int exerciseIndex, required int setIndex}) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    final exercise = exercises[exerciseIndex];
+    final sets = List<SetLog>.from(exercise.sets);
+
+    sets[setIndex] = sets[setIndex].copyWith(completed: false);
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+    );
+    _save();
+  }
+
+  /// Rimuove una serie da un esercizio (solo per questa sessione)
+  void removeSet({required int exerciseIndex, required int setIndex}) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    final exercise = exercises[exerciseIndex];
+    final sets = List<SetLog>.from(exercise.sets);
+
+    if (sets.length <= 1) return; // almeno 1 serie
+    sets.removeAt(setIndex);
+    // Rinumera
+    for (var i = 0; i < sets.length; i++) {
+      sets[i] = sets[i].copyWith(setNumber: i + 1);
+    }
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+    );
+    _save();
+  }
+
+  /// Aggiunge una serie copiando i valori dell'ultima
+  void addSet({required int exerciseIndex}) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    final exercise = exercises[exerciseIndex];
+    final sets = List<SetLog>.from(exercise.sets);
+
+    final lastSet = sets.last;
+    sets.add(SetLog(
+      setNumber: sets.length + 1,
+      plannedReps: lastSet.plannedReps,
+    ));
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+    );
+    _save();
+  }
+
   /// Chiudi la sessione
   void closeSession() {
     state = null;

@@ -121,6 +121,21 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   onSetCompleted: (setIndex, weight, reps) {
                     _onSetCompleted(index, setIndex, weight, reps);
                   },
+                  onUndoSet: (setIndex) {
+                    ref.read(activeSessionProvider.notifier).undoSet(
+                      exerciseIndex: index, setIndex: setIndex,
+                    );
+                  },
+                  onRemoveSet: (setIndex) {
+                    ref.read(activeSessionProvider.notifier).removeSet(
+                      exerciseIndex: index, setIndex: setIndex,
+                    );
+                  },
+                  onAddSet: () {
+                    ref.read(activeSessionProvider.notifier).addSet(
+                      exerciseIndex: index,
+                    );
+                  },
                   onSkip: () {
                     ref.read(activeSessionProvider.notifier).skipExercise(index);
                   },
@@ -202,6 +217,9 @@ class _ExerciseSetTracker extends StatelessWidget {
   final int exerciseIndex;
   final bool isCurrent;
   final void Function(int setIndex, double weight, int reps) onSetCompleted;
+  final void Function(int setIndex) onUndoSet;
+  final void Function(int setIndex) onRemoveSet;
+  final VoidCallback onAddSet;
   final VoidCallback onSkip;
   final VoidCallback onTap;
 
@@ -277,6 +295,21 @@ class _ExerciseSetTracker extends StatelessWidget {
               sets: exercise.sets,
               suggestedWeight: plan.suggestedWeight,
               onSetCompleted: onSetCompleted,
+              onUndoSet: onUndoSet,
+              onRemoveSet: onRemoveSet,
+            ),
+            // Add set button
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onAddSet,
+                icon: const Icon(Icons.add, size: 16, color: AppColors.primary),
+                label: const Text('Serie', style: TextStyle(color: AppColors.primary, fontSize: 13)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: const Size(48, 32),
+                ),
+              ),
             ),
 
             // Notes
@@ -305,11 +338,15 @@ class _SetTable extends StatelessWidget {
     required this.sets,
     required this.suggestedWeight,
     required this.onSetCompleted,
+    required this.onUndoSet,
+    required this.onRemoveSet,
   });
 
   final List<SetLog> sets;
   final double suggestedWeight;
   final void Function(int setIndex, double weight, int reps) onSetCompleted;
+  final void Function(int setIndex) onUndoSet;
+  final void Function(int setIndex) onRemoveSet;
 
   @override
   Widget build(BuildContext context) {
@@ -332,11 +369,24 @@ class _SetTable extends StatelessWidget {
         ...sets.asMap().entries.map((entry) {
           final index = entry.key;
           final set = entry.value;
-          return _SetRow(
-            set: set,
-            setIndex: index,
-            suggestedWeight: suggestedWeight,
-            onCompleted: (weight, reps) => onSetCompleted(index, weight, reps),
+          return Dismissible(
+            key: ValueKey('set-$index-${sets.length}'),
+            direction: DismissDirection.endToStart,
+            confirmDismiss: (_) async => sets.length > 1,
+            onDismissed: (_) => onRemoveSet(index),
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 16),
+              color: AppColors.error.withValues(alpha: 0.3),
+              child: const Icon(Icons.delete, color: AppColors.error, size: 20),
+            ),
+            child: _SetRow(
+              set: set,
+              setIndex: index,
+              suggestedWeight: suggestedWeight,
+              onCompleted: (weight, reps) => onSetCompleted(index, weight, reps),
+              onUndo: () => onUndoSet(index),
+            ),
           );
         }),
       ],
@@ -351,12 +401,14 @@ class _SetRow extends StatefulWidget {
     required this.setIndex,
     required this.suggestedWeight,
     required this.onCompleted,
+    required this.onUndo,
   });
 
   final SetLog set;
   final int setIndex;
   final double suggestedWeight;
   final void Function(double weight, int reps) onCompleted;
+  final VoidCallback onUndo;
 
   @override
   State<_SetRow> createState() => _SetRowState();
@@ -471,12 +523,12 @@ class _SetRowState extends State<_SetRow> {
             ),
           ),
 
-          // Check button
+          // Check button (tap to complete, tap again to undo)
           SizedBox(
             width: 48,
             height: 48,
             child: IconButton(
-              onPressed: isCompleted ? null : _complete,
+              onPressed: isCompleted ? widget.onUndo : _complete,
               icon: Icon(
                 isCompleted ? Icons.check_circle : Icons.check_circle_outline,
                 color: isCompleted ? AppColors.success : AppColors.textSecondary,
