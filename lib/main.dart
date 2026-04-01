@@ -60,20 +60,20 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  static const _screens = [
-    WorkoutTodayScreen(),
-    HistoryScreen(),
-    StatsScreen(),
-    ProfileScreen(),
-  ];
+  Widget _buildScreen() {
+    return switch (_currentIndex) {
+      0 => const WorkoutTodayScreen(),
+      1 => const HistoryScreen(),
+      2 => const StatsScreen(),
+      3 => const ProfileScreen(),
+      _ => const WorkoutTodayScreen(),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: _buildScreen(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),

@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../models/models.dart';
 import '../../../services/session_providers.dart';
+import '../../../services/providers.dart';
 import 'session_detail_screen.dart';
 
 class HistoryScreen extends ConsumerWidget {
@@ -93,22 +94,29 @@ class HistoryScreen extends ConsumerWidget {
                   );
                 }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  itemCount: sessions.length,
-                  itemBuilder: (context, index) {
-                    return _SessionCard(
-                      session: sessions[index],
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => SessionDetailScreen(session: sessions[index]),
-                          ),
-                        );
-                      },
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(allSessionsProvider);
+                  },
+                  color: AppColors.primary,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    itemCount: sessions.length,
+                    itemBuilder: (context, index) {
+                      return _SessionCard(
+                        session: sessions[index],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SessionDetailScreen(session: sessions[index]),
+                            ),
+                          );
+                        },
+                        onDelete: () => _confirmDelete(context, ref, sessions[index]),
                     );
                   },
+                ),
                 );
               },
             ),
@@ -119,10 +127,39 @@ class HistoryScreen extends ConsumerWidget {
   }
 }
 
+  void _confirmDelete(BuildContext context, WidgetRef ref, WorkoutSession session) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        title: const Text('Eliminare questo workout?'),
+        content: Text('${session.workoutName} del ${session.date.day}/${session.date.month}/${session.date.year}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final repo = ref.read(sessionRepositoryProvider);
+              await repo.deleteSession(session.id);
+              ref.invalidate(allSessionsProvider);
+              ref.invalidate(filteredSessionsProvider);
+            },
+            child: const Text('Elimina', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SessionCard extends StatelessWidget {
-  const _SessionCard({required this.session, required this.onTap});
+  const _SessionCard({required this.session, required this.onTap, required this.onDelete});
   final WorkoutSession session;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +225,13 @@ class _SessionCard extends StatelessWidget {
             ),
           ),
 
-          // Arrow
+          // Delete + Arrow
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppColors.textSecondary, size: 20),
+            onPressed: onDelete,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          ),
           const Icon(Icons.chevron_right, color: AppColors.textSecondary),
         ],
       ),
