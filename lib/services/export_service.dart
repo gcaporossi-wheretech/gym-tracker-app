@@ -1,13 +1,12 @@
 import 'dart:convert';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 
 import '../models/models.dart';
 
 /// Service per esportare i dati di allenamento in JSON e CSV.
+/// Il download effettivo avviene nel widget chiamante via callback.
 class ExportService {
-  /// Esporta tutte le sessioni in formato JSON completo
-  void exportJson({
+  /// Genera JSON completo delle sessioni
+  String generateJson({
     required List<WorkoutSession> sessions,
     required WorkoutPlan? plan,
     required int currentWeek,
@@ -25,23 +24,23 @@ class ExportService {
       'progressionSummary': _buildSummary(sessions),
     };
 
-    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
-    _download(jsonString, 'gymtracker_export_${_dateStamp()}.json', 'application/json');
+    return const JsonEncoder.withIndent('  ').convert(data);
   }
 
-  /// Esporta tutte le sessioni in formato CSV tabellare
-  void exportCsv({required List<WorkoutSession> sessions}) {
+  /// Genera CSV tabellare delle sessioni
+  String generateCsv({required List<WorkoutSession> sessions}) {
     final buffer = StringBuffer();
     buffer.writeln('data,giorno,workout,esercizio,gruppo_muscolare,serie,rep_target,rep_effettive,peso_kg,rpe,note');
 
+    final dayNames = ['', 'lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'];
+
     for (final session in sessions) {
       final date = '${session.date.year}-${session.date.month.toString().padLeft(2, '0')}-${session.date.day.toString().padLeft(2, '0')}';
-      final dayNames = ['', 'lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'];
       final day = dayNames[session.date.weekday];
 
       for (final ex in session.exercises) {
         if (ex.skipped) {
-          buffer.writeln('$date,$day,${session.workoutName},${_csvEscape(ex.exerciseName)},${ex.muscleGroup},,,,,SALTATO,');
+          buffer.writeln('$date,$day,${_csvEscape(session.workoutName)},${_csvEscape(ex.exerciseName)},${ex.muscleGroup},,,,,SALTATO,');
           continue;
         }
         for (final set in ex.sets) {
@@ -57,7 +56,7 @@ class ExportService {
       }
     }
 
-    _download(buffer.toString(), 'gymtracker_export_${_dateStamp()}.csv', 'text/csv');
+    return buffer.toString();
   }
 
   Map<String, dynamic> _buildSummary(List<WorkoutSession> sessions) {
@@ -90,20 +89,5 @@ class ExportService {
       return '"${value.replaceAll('"', '""')}"';
     }
     return value;
-  }
-
-  String _dateStamp() {
-    final now = DateTime.now();
-    return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-  }
-
-  void _download(String content, String filename, String mimeType) {
-    final bytes = utf8.encode(content);
-    final blob = html.Blob([bytes], mimeType);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    html.AnchorElement(href: url)
-      ..setAttribute('download', filename)
-      ..click();
-    html.Url.revokeObjectUrl(url);
   }
 }

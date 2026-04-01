@@ -77,7 +77,6 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
 
 class _AnimBuilder extends AnimatedWidget {
   const _AnimBuilder({
-    super.key,
     required super.listenable,
     required this.builder,
   });
