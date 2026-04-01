@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_spacing.dart';
+import 'core/widgets/widgets.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,27 +38,57 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFF4F8CFF), Color(0xFF00D4AA)],
-                ).createShader(bounds),
-                child: Text(
-                  'GymTracker',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.w900,
-                      ),
+              const GradientText(
+                'GymTracker',
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Il tuo allenamento, potenziato.',
                 style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              GlassmorphismCard(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
+                      children: [
+                        const BigNumber('75', unit: 'kg'),
+                        Text('Rematore', style: Theme.of(context).textTheme.labelSmall),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        NeonText(
+                          'PR!',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        Text('Nuovo record', style: Theme.of(context).textTheme.labelSmall),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const BigNumber('14', unit: '/14'),
+                        Text('Test OK', style: Theme.of(context).textTheme.labelSmall),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              GlowButton(
+                label: 'Inizia Workout',
+                icon: Icons.fitness_center,
+                onPressed: () {},
               ),
             ],
           ),
