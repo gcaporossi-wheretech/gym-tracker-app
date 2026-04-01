@@ -4,9 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:gym_tracker_app/core/theme/app_theme.dart';
 import 'package:gym_tracker_app/features/workout/presentation/workout_today_screen.dart';
-import 'package:gym_tracker_app/features/history/presentation/history_screen.dart';
-import 'package:gym_tracker_app/features/stats/presentation/stats_screen.dart';
-import 'package:gym_tracker_app/features/profile/presentation/profile_screen.dart';
 import 'package:gym_tracker_app/repositories/workout_plan_repository.dart';
 import 'package:gym_tracker_app/repositories/session_repository.dart';
 import 'package:gym_tracker_app/services/providers.dart';
