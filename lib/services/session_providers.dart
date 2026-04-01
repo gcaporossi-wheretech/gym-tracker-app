@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import 'providers.dart';
 
-/// Tutte le sessioni ordinate per data (piu recenti prima)
-final allSessionsProvider = FutureProvider<List<WorkoutSession>>((ref) async {
+/// Tutte le sessioni ordinate per data (piu recenti prima).
+/// autoDispose per ricaricare quando si torna al tab.
+final allSessionsProvider = FutureProvider.autoDispose<List<WorkoutSession>>((ref) async {
   final repo = ref.watch(sessionRepositoryProvider);
   return repo.getAllSessions();
 });
@@ -23,7 +24,7 @@ class SessionFilterNotifier extends Notifier<SessionFilter> {
   void set(SessionFilter filter) => state = filter;
 }
 
-final filteredSessionsProvider = FutureProvider<List<WorkoutSession>>((ref) async {
+final filteredSessionsProvider = FutureProvider.autoDispose<List<WorkoutSession>>((ref) async {
   final sessions = await ref.watch(allSessionsProvider.future);
   final filter = ref.watch(sessionFilterProvider);
   final now = DateTime.now();

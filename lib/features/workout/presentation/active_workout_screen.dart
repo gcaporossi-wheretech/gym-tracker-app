@@ -325,18 +325,30 @@ class _ExerciseSetTracker extends StatelessWidget {
               onUndoSet: onUndoSet,
               onRemoveSet: onRemoveSet,
             ),
-            // Add set button
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: onAddSet,
-                icon: const Icon(Icons.add, size: 16, color: AppColors.primary),
-                label: const Text('Serie', style: TextStyle(color: AppColors.primary, fontSize: 13)),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  minimumSize: const Size(48, 32),
+            // Add/remove set buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (exercise.sets.length > 1)
+                  TextButton.icon(
+                    onPressed: () => onRemoveSet(exercise.sets.length - 1),
+                    icon: const Icon(Icons.remove, size: 16, color: AppColors.error),
+                    label: const Text('Serie', style: TextStyle(color: AppColors.error, fontSize: 13)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(48, 32),
+                    ),
+                  ),
+                TextButton.icon(
+                  onPressed: onAddSet,
+                  icon: const Icon(Icons.add, size: 16, color: AppColors.primary),
+                  label: const Text('Serie', style: TextStyle(color: AppColors.primary, fontSize: 13)),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(48, 32),
+                  ),
                 ),
-              ),
+              ],
             ),
 
             // Notes
@@ -396,24 +408,14 @@ class _SetTable extends StatelessWidget {
         ...sets.asMap().entries.map((entry) {
           final index = entry.key;
           final set = entry.value;
-          return Dismissible(
-            key: ValueKey('set-$index-${sets.length}'),
-            direction: DismissDirection.endToStart,
-            confirmDismiss: (_) async => sets.length > 1,
-            onDismissed: (_) => onRemoveSet(index),
-            background: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 16),
-              color: AppColors.error.withValues(alpha: 0.3),
-              child: const Icon(Icons.delete, color: AppColors.error, size: 20),
-            ),
-            child: _SetRow(
-              set: set,
-              setIndex: index,
-              suggestedWeight: suggestedWeight,
-              onCompleted: (weight, reps) => onSetCompleted(index, weight, reps),
-              onUndo: () => onUndoSet(index),
-            ),
+          return _SetRow(
+            set: set,
+            setIndex: index,
+            suggestedWeight: suggestedWeight,
+            canRemove: sets.length > 1,
+            onCompleted: (weight, reps) => onSetCompleted(index, weight, reps),
+            onUndo: () => onUndoSet(index),
+            onRemove: () => onRemoveSet(index),
           );
         }),
       ],
@@ -429,6 +431,8 @@ class _SetRow extends StatefulWidget {
     required this.suggestedWeight,
     required this.onCompleted,
     required this.onUndo,
+    required this.onRemove,
+    this.canRemove = true,
   });
 
   final SetLog set;
@@ -436,6 +440,8 @@ class _SetRow extends StatefulWidget {
   final double suggestedWeight;
   final void Function(double weight, int reps) onCompleted;
   final VoidCallback onUndo;
+  final VoidCallback onRemove;
+  final bool canRemove;
 
   @override
   State<_SetRow> createState() => _SetRowState();
@@ -477,17 +483,29 @@ class _SetRowState extends State<_SetRow> {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          // Set number
+          // Set number / remove button
           SizedBox(
             width: 36,
-            child: Text(
-              '${widget.setIndex + 1}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: isCompleted ? AppColors.success : AppColors.textPrimary,
-              ),
-            ),
+            child: widget.canRemove && !isCompleted
+                ? GestureDetector(
+                    onLongPress: widget.onRemove,
+                    child: Text(
+                      '${widget.setIndex + 1}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: isCompleted ? AppColors.success : AppColors.textPrimary,
+                      ),
+                    ),
+                  )
+                : Text(
+                    '${widget.setIndex + 1}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isCompleted ? AppColors.success : AppColors.textPrimary,
+                    ),
+                  ),
           ),
 
           // Weight input
