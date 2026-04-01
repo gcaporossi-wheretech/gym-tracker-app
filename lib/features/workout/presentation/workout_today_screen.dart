@@ -9,6 +9,7 @@ import '../../../services/providers.dart';
 import '../../../services/workout_plan_service.dart';
 import 'active_workout_screen.dart';
 import 'active_session_notifier.dart';
+import 'edit_plan_screen.dart';
 
 class WorkoutTodayScreen extends ConsumerWidget {
   const WorkoutTodayScreen({super.key});
@@ -101,9 +102,25 @@ class _WorkoutDayView extends ConsumerWidget {
                 children: [
                   if (position != null) _ProgramHeader(position: position!),
                   const SizedBox(height: AppSpacing.md),
-                  GradientText(
-                    dayPlan.name,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GradientText(
+                          dayPlan.name,
+                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_note, color: AppColors.primary),
+                        tooltip: 'Modifica scheda',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const EditPlanScreen()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
