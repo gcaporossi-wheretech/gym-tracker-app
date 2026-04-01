@@ -1,13 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'core/theme/app_theme.dart';
-import 'core/theme/app_spacing.dart';
-import 'core/widgets/widgets.dart';
+import 'features/workout/presentation/workout_today_screen.dart';
+import 'features/history/presentation/history_screen.dart';
+import 'features/stats/presentation/stats_screen.dart';
+import 'features/profile/presentation/profile_screen.dart';
+import 'repositories/hive_workout_plan_repository.dart';
+import 'repositories/hive_session_repository.dart';
+import 'services/providers.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: GymTrackerApp()));
+  await Hive.initFlutter();
+
+  // Initialize repositories
+  final planRepo = HiveWorkoutPlanRepository();
+  await planRepo.init();
+  final sessionRepo = HiveSessionRepository();
+  await sessionRepo.init();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        workoutPlanRepositoryProvider.overrideWithValue(planRepo),
+        sessionRepositoryProvider.overrideWithValue(sessionRepo),
+      ],
+      child: const GymTrackerApp(),
+    ),
+  );
 }
 
 class GymTrackerApp extends StatelessWidget {
@@ -19,80 +41,34 @@ class GymTrackerApp extends StatelessWidget {
       title: 'GymTracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      home: const HomeScreen(),
+      home: const MainShell(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class MainShell extends StatefulWidget {
+  const MainShell({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<MainShell> createState() => _MainShellState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
+
+  static const _screens = [
+    WorkoutTodayScreen(),
+    HistoryScreen(),
+    StatsScreen(),
+    ProfileScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const GradientText(
-                'GymTracker',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Il tuo allenamento, potenziato.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              GlassmorphismCard(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        const BigNumber('75', unit: 'kg'),
-                        Text('Rematore', style: Theme.of(context).textTheme.labelSmall),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        NeonText(
-                          'PR!',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        Text('Nuovo record', style: Theme.of(context).textTheme.labelSmall),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        const BigNumber('14', unit: '/14'),
-                        Text('Test OK', style: Theme.of(context).textTheme.labelSmall),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              GlowButton(
-                label: 'Inizia Workout',
-                icon: Icons.fitness_center,
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
