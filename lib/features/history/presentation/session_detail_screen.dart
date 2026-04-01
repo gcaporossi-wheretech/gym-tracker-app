@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -12,7 +11,10 @@ class SessionDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('EEEE d MMMM yyyy', 'it_IT');
+    final d = session.date;
+    final dayNames = ['', 'Lunedi', 'Martedi', 'Mercoledi', 'Giovedi', 'Venerdi', 'Sabato', 'Domenica'];
+    final monthNames = ['', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+    final dateString = '${dayNames[d.weekday]} ${d.day} ${monthNames[d.month]} ${d.year}';
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
@@ -22,7 +24,7 @@ class SessionDetailScreen extends StatelessWidget {
         children: [
           // Header stats
           Text(
-            dateFormat.format(session.date),
+            dateString,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.md),
