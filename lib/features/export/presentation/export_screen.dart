@@ -1,3 +1,7 @@
+import 'dart:convert';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +12,21 @@ import '../../../services/export_service.dart';
 import '../../../services/providers.dart';
 import '../../../services/session_providers.dart';
 
+void _downloadFile(String content, String filename, String mimeType) {
+  final bytes = utf8.encode(content);
+  final blob = html.Blob([bytes], mimeType);
+  final url = html.Url.createObjectUrlFromBlob(blob);
+  html.AnchorElement(href: url)
+    ..setAttribute('download', filename)
+    ..click();
+  html.Url.revokeObjectUrl(url);
+}
+
+String _dateStamp() {
+  final now = DateTime.now();
+  return '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+}
+
 class ExportScreen extends ConsumerWidget {
   const ExportScreen({super.key});
 
@@ -16,6 +35,7 @@ class ExportScreen extends ConsumerWidget {
     final sessionsAsync = ref.watch(allSessionsProvider);
     final planAsync = ref.watch(activePlanProvider);
     final position = ref.watch(programPositionProvider);
+    final exportService = ExportService();
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
@@ -41,18 +61,15 @@ class ExportScreen extends ConsumerWidget {
               onTap: () {
                 sessionsAsync.whenData((sessions) {
                   planAsync.whenData((plan) {
-                    final export = ExportService();
-                    export.exportJson(
+                    final json = exportService.generateJson(
                       sessions: sessions,
                       plan: plan,
                       currentWeek: position?.week ?? 1,
                       currentPhase: position?.phase?.number ?? 1,
                     );
+                    _downloadFile(json, 'gymtracker_export_${_dateStamp()}.json', 'application/json');
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Export JSON scaricato!'),
-                        backgroundColor: AppColors.success,
-                      ),
+                      const SnackBar(content: Text('Export JSON scaricato!'), backgroundColor: AppColors.success),
                     );
                   });
                 });
@@ -60,8 +77,7 @@ class ExportScreen extends ConsumerWidget {
               child: Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 48, height: 48,
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -75,10 +91,8 @@ class ExportScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Esporta JSON', style: Theme.of(context).textTheme.titleMedium),
-                        Text(
-                          'Formato completo con tutti i dati, ideale per analisi con Claude',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
-                        ),
+                        Text('Formato completo, ideale per analisi con Claude',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13)),
                       ],
                     ),
                   ),
@@ -92,21 +106,17 @@ class ExportScreen extends ConsumerWidget {
             GlassmorphismCard(
               onTap: () {
                 sessionsAsync.whenData((sessions) {
-                  final export = ExportService();
-                  export.exportCsv(sessions: sessions);
+                  final csv = exportService.generateCsv(sessions: sessions);
+                  _downloadFile(csv, 'gymtracker_export_${_dateStamp()}.csv', 'text/csv');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Export CSV scaricato!'),
-                      backgroundColor: AppColors.success,
-                    ),
+                    const SnackBar(content: Text('Export CSV scaricato!'), backgroundColor: AppColors.success),
                   );
                 });
               },
               child: Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 48, height: 48,
                     decoration: BoxDecoration(
                       color: AppColors.success.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -120,10 +130,8 @@ class ExportScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Esporta CSV', style: Theme.of(context).textTheme.titleMedium),
-                        Text(
-                          'Formato tabellare, apribile con Excel o Google Sheets',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
-                        ),
+                        Text('Apribile con Excel o Google Sheets',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13)),
                       ],
                     ),
                   ),
@@ -133,7 +141,6 @@ class ExportScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // Info
             sessionsAsync.when(
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),

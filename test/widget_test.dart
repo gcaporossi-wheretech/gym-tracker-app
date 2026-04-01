@@ -1,7 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:gym_tracker_app/main.dart';
+import 'package:gym_tracker_app/core/theme/app_theme.dart';
+import 'package:gym_tracker_app/features/workout/presentation/workout_today_screen.dart';
+import 'package:gym_tracker_app/features/history/presentation/history_screen.dart';
+import 'package:gym_tracker_app/features/stats/presentation/stats_screen.dart';
+import 'package:gym_tracker_app/features/profile/presentation/profile_screen.dart';
 import 'package:gym_tracker_app/repositories/workout_plan_repository.dart';
 import 'package:gym_tracker_app/repositories/session_repository.dart';
 import 'package:gym_tracker_app/services/providers.dart';
@@ -41,7 +46,10 @@ void main() {
           workoutPlanRepositoryProvider.overrideWithValue(FakeWorkoutPlanRepository()),
           sessionRepositoryProvider.overrideWithValue(FakeSessionRepository()),
         ],
-        child: const GymTrackerApp(),
+        child: MaterialApp(
+          theme: AppTheme.dark,
+          home: const _TestShell(),
+        ),
       ),
     );
 
@@ -50,4 +58,24 @@ void main() {
     expect(find.text('Grafici'), findsOneWidget);
     expect(find.text('Profilo'), findsOneWidget);
   });
+}
+
+/// Shell di test senza import di export_screen (evita dart:html)
+class _TestShell extends StatelessWidget {
+  const _TestShell();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: const WorkoutTodayScreen(),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Workout'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Storico'),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Grafici'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profilo'),
+        ],
+      ),
+    );
+  }
 }

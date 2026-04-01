@@ -7,6 +7,7 @@ import 'features/workout/presentation/workout_today_screen.dart';
 import 'features/history/presentation/history_screen.dart';
 import 'features/stats/presentation/stats_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
+import 'features/export/presentation/export_screen.dart';
 import 'repositories/hive_workout_plan_repository.dart';
 import 'repositories/hive_session_repository.dart';
 import 'services/providers.dart';
@@ -41,6 +42,9 @@ class GymTrackerApp extends StatelessWidget {
       title: 'GymTracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
+      routes: {
+        '/export': (context) => const ExportScreen(),
+      },
       home: const MainShell(),
     );
   }
