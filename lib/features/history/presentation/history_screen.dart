@@ -125,7 +125,6 @@ class HistoryScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
   void _confirmDelete(BuildContext context, WidgetRef ref, WorkoutSession session) {
     showDialog(
