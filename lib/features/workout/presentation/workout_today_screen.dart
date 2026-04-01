@@ -7,6 +7,8 @@ import '../../../core/widgets/widgets.dart';
 import '../../../models/models.dart';
 import '../../../services/providers.dart';
 import '../../../services/workout_plan_service.dart';
+import 'active_workout_screen.dart';
+import 'active_session_notifier.dart';
 
 class WorkoutTodayScreen extends ConsumerWidget {
   const WorkoutTodayScreen({super.key});
@@ -79,13 +81,13 @@ class _RestDayView extends StatelessWidget {
 }
 
 /// Vista per giorno di allenamento
-class _WorkoutDayView extends StatelessWidget {
+class _WorkoutDayView extends ConsumerWidget {
   const _WorkoutDayView({required this.dayPlan, this.position});
   final DayPlan dayPlan;
   final ProgramPosition? position;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       child: CustomScrollView(
         slivers: [
@@ -148,7 +150,13 @@ class _WorkoutDayView extends StatelessWidget {
                 label: 'Inizia Workout',
                 icon: Icons.fitness_center,
                 onPressed: () {
-                  // TODO: GYM-06 - navigazione a sessione attiva
+                  ref.read(activeSessionProvider.notifier).startSession(dayPlan);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ActiveWorkoutScreen(dayPlan: dayPlan),
+                    ),
+                  );
                 },
               ),
             ),
