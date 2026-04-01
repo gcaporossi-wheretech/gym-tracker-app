@@ -5,7 +5,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../models/models.dart';
+import '../../../services/rest_timer_service.dart';
 import 'active_session_notifier.dart';
+import 'rest_timer_overlay.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key, required this.dayPlan});
@@ -17,16 +19,37 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
+  final _restTimer = RestTimerService();
+
   @override
   void initState() {
     super.initState();
-    // Avvia la sessione se non esiste gia
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final session = ref.read(activeSessionProvider);
       if (session == null) {
         ref.read(activeSessionProvider.notifier).startSession(widget.dayPlan);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _restTimer.dispose();
+    super.dispose();
+  }
+
+  void _onSetCompleted(int exerciseIndex, int setIndex, double weight, int reps) {
+    ref.read(activeSessionProvider.notifier).logSet(
+      exerciseIndex: exerciseIndex,
+      setIndex: setIndex,
+      weight: weight,
+      reps: reps,
+    );
+    // Auto-start rest timer
+    final restSeconds = widget.dayPlan.exercises[exerciseIndex].restSeconds;
+    if (restSeconds > 0) {
+      _restTimer.start(restSeconds);
+    }
   }
 
   @override
@@ -66,7 +89,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
+        children: [
+          Column(
         children: [
           // Progress bar
           LinearProgressIndicator(
@@ -94,12 +119,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   exerciseIndex: index,
                   isCurrent: isCurrent,
                   onSetCompleted: (setIndex, weight, reps) {
-                    ref.read(activeSessionProvider.notifier).logSet(
-                      exerciseIndex: index,
-                      setIndex: setIndex,
-                      weight: weight,
-                      reps: reps,
-                    );
+                    _onSetCompleted(index, setIndex, weight, reps);
                   },
                   onSkip: () {
                     ref.read(activeSessionProvider.notifier).skipExercise(index);
@@ -125,6 +145,14 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 },
               ),
             ),
+          ),
+        ],
+      ),
+          // Timer overlay
+          RestTimerOverlay(
+            timer: _restTimer,
+            onSkip: () => _restTimer.skip(),
+            onAddThirty: () => _restTimer.addThirtySeconds(),
           ),
         ],
       ),
