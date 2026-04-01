@@ -115,6 +115,20 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     _save();
   }
 
+  /// Riattiva un esercizio skippato
+  void unskipExercise(int exerciseIndex) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    exercises[exerciseIndex] = exercises[exerciseIndex].copyWith(skipped: false);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+    );
+    _save();
+  }
+
   /// Vai a un esercizio specifico
   void goToExercise(int index) {
     final s = state;

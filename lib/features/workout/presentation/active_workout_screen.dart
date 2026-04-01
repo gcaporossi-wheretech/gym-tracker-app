@@ -139,6 +139,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   onSkip: () {
                     ref.read(activeSessionProvider.notifier).skipExercise(index);
                   },
+                  onUnskip: () {
+                    ref.read(activeSessionProvider.notifier).unskipExercise(index);
+                  },
                   onTap: () {
                     ref.read(activeSessionProvider.notifier).goToExercise(index);
                   },
@@ -208,7 +211,11 @@ class _ExerciseSetTracker extends StatelessWidget {
     required this.exerciseIndex,
     required this.isCurrent,
     required this.onSetCompleted,
+    required this.onUndoSet,
+    required this.onRemoveSet,
+    required this.onAddSet,
     required this.onSkip,
+    required this.onUnskip,
     required this.onTap,
   });
 
@@ -221,6 +228,7 @@ class _ExerciseSetTracker extends StatelessWidget {
   final void Function(int setIndex) onRemoveSet;
   final VoidCallback onAddSet;
   final VoidCallback onSkip;
+  final VoidCallback onUnskip;
   final VoidCallback onTap;
 
   @override
@@ -267,7 +275,17 @@ class _ExerciseSetTracker extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!exercise.skipped && !allCompleted)
+              if (exercise.skipped)
+                TextButton(
+                  onPressed: onUnskip,
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.success,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(48, 36),
+                  ),
+                  child: const Text('Riattiva', style: TextStyle(fontSize: 13)),
+                )
+              else if (!allCompleted)
                 TextButton(
                   onPressed: onSkip,
                   style: TextButton.styleFrom(
