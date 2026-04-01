@@ -8,6 +8,7 @@ import '../../../models/models.dart';
 import '../../../services/rest_timer_service.dart';
 import 'active_session_notifier.dart';
 import 'rest_timer_overlay.dart';
+import '../../../services/session_providers.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key, required this.dayPlan});
@@ -63,7 +64,15 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
 
     if (sessionState.isCompleted) {
-      return _CompletionScreen(session: sessionState.session);
+      return _CompletionScreen(
+        session: sessionState.session,
+        onClose: () {
+          ref.read(activeSessionProvider.notifier).closeSession();
+          // Invalidate sessions so History tab refreshes
+          ref.invalidate(allSessionsProvider);
+          Navigator.pop(context);
+        },
+      );
     }
 
     return Scaffold(
@@ -570,8 +579,9 @@ class _SetRowState extends State<_SetRow> {
 
 /// Schermata di completamento workout
 class _CompletionScreen extends StatefulWidget {
-  const _CompletionScreen({required this.session});
+  const _CompletionScreen({required this.session, required this.onClose});
   final WorkoutSession session;
+  final VoidCallback onClose;
 
   @override
   State<_CompletionScreen> createState() => _CompletionScreenState();
@@ -648,7 +658,7 @@ class _CompletionScreenState extends State<_CompletionScreen> {
               GlowButton(
                 label: 'Chiudi',
                 icon: Icons.home,
-                onPressed: () => Navigator.pop(context),
+                onPressed: widget.onClose,
               ),
             ],
           ),
