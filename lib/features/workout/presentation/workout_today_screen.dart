@@ -371,31 +371,23 @@ class _ExerciseCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
             children: [
               _InfoChip(
                 label: '${exercise.sets}x${exercise.reps}',
                 icon: Icons.repeat,
               ),
-              const SizedBox(width: AppSpacing.sm),
               if (exercise.suggestedWeight > 0)
                 _InfoChip(
                   label: '${exercise.suggestedWeight.toStringAsFixed(exercise.suggestedWeight.truncateToDouble() == exercise.suggestedWeight ? 0 : 1)} kg',
                   icon: Icons.fitness_center,
                 ),
-              if (exercise.suggestedWeight > 0)
-                const SizedBox(width: AppSpacing.sm),
               _InfoChip(
                 label: '${exercise.restSeconds}s',
                 icon: Icons.timer,
               ),
-              if (exercise.rpe > 0) ...[
-                const SizedBox(width: AppSpacing.sm),
-                _InfoChip(
-                  label: 'RPE ${exercise.rpe.toStringAsFixed(exercise.rpe.truncateToDouble() == exercise.rpe ? 0 : 1)}',
-                  icon: Icons.speed,
-                ),
-              ],
             ],
           ),
           if (exercise.notes.isNotEmpty) ...[

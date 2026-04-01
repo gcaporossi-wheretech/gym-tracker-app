@@ -267,7 +267,7 @@ class _ExerciseSetTracker extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 28, top: 2, bottom: AppSpacing.sm),
               child: Text(
-                '${plan.equipment} • ${plan.restSeconds}s rec',
+                '${plan.equipment} • ${plan.restSeconds}s rec${plan.rpe > 0 ? ' • Intensita ${plan.rpe.toStringAsFixed(plan.rpe.truncateToDouble() == plan.rpe ? 0 : 1)}/10' : ''}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
               ),
             ),
