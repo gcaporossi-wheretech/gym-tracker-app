@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -27,10 +26,20 @@ class ProfileScreen extends ConsumerWidget {
 
           // Program info
           planAsync.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            loading: () => const GlassmorphismCard(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              ),
+            ),
+            error: (e, _) => GlassmorphismCard(
+              child: Text('Errore caricamento scheda: $e',
+                  style: const TextStyle(color: AppColors.error)),
+            ),
             data: (plan) {
-              final dateFormat = DateFormat('d MMMM yyyy', 'it_IT');
+              final startDate = '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year}';
               return GlassmorphismCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +47,7 @@ class ProfileScreen extends ConsumerWidget {
                     Text('Scheda attiva', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: AppSpacing.sm),
                     _InfoRow(label: 'Nome', value: plan.name),
-                    _InfoRow(label: 'Inizio', value: dateFormat.format(plan.startDate)),
+                    _InfoRow(label: 'Inizio', value: startDate),
                     _InfoRow(label: 'Durata', value: '${plan.totalWeeks} settimane'),
                     if (position != null) ...[
                       const Divider(color: AppColors.bgElevated, height: AppSpacing.lg),
@@ -84,7 +93,6 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ],
                       const SizedBox(height: AppSpacing.sm),
-                      // Progress bar
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
@@ -108,69 +116,67 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
 
           // Fasi del programma
-          GlassmorphismCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Fasi del programma', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: AppSpacing.sm),
-                planAsync.when(
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
-                  data: (plan) => Column(
-                    children: plan.phases.map((phase) {
-                      final isCurrent = position?.phase?.number == phase.number;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: isCurrent ? AppColors.primary.withValues(alpha: 0.15) : AppColors.bgElevated,
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                          border: isCurrent ? Border.all(color: AppColors.primary.withValues(alpha: 0.4)) : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isCurrent ? AppColors.primary : AppColors.textSecondary,
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                '${phase.number}',
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
-                              ),
+          planAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (plan) => GlassmorphismCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Fasi del programma', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: AppSpacing.sm),
+                  ...plan.phases.map((phase) {
+                    final isCurrent = position?.phase?.number == phase.number;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: isCurrent ? AppColors.primary.withValues(alpha: 0.15) : AppColors.bgElevated,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                        border: isCurrent ? Border.all(color: AppColors.primary.withValues(alpha: 0.4)) : null,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isCurrent ? AppColors.primary : AppColors.textSecondary,
                             ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    phase.name,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: isCurrent ? AppColors.textPrimary : AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Settimane ${phase.weekStart}-${phase.weekEnd}',
-                                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                  ),
-                                ],
-                              ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${phase.number}',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
                             ),
-                            if (isCurrent)
-                              const Icon(Icons.play_arrow, color: AppColors.primary, size: 18),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  phase.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: isCurrent ? AppColors.textPrimary : AppColors.textSecondary,
+                                  ),
+                                ),
+                                Text(
+                                  'Settimane ${phase.weekStart}-${phase.weekEnd}',
+                                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isCurrent)
+                            const Icon(Icons.play_arrow, color: AppColors.primary, size: 18),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -219,12 +225,16 @@ class _InfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: valueColor ?? AppColors.textPrimary,
+          Flexible(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: valueColor ?? AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
