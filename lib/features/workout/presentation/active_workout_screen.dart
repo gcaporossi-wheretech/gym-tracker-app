@@ -499,21 +499,31 @@ class _SetRowState extends State<_SetRow> {
 }
 
 /// Schermata di completamento workout
-class _CompletionScreen extends StatelessWidget {
+class _CompletionScreen extends StatefulWidget {
   const _CompletionScreen({required this.session});
   final WorkoutSession session;
 
   @override
+  State<_CompletionScreen> createState() => _CompletionScreenState();
+}
+
+class _CompletionScreenState extends State<_CompletionScreen> {
+  bool _showCelebration = true;
+
+  @override
   Widget build(BuildContext context) {
+    final session = widget.session;
     final completedSets = session.totalCompletedSets;
     final totalVolume = session.totalVolume;
     final skippedCount = session.exercises.where((e) => e.skipped).length;
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -573,6 +583,12 @@ class _CompletionScreen extends StatelessWidget {
             ],
           ),
         ),
+          ),
+          if (_showCelebration)
+            CelebrationOverlay(
+              onComplete: () => setState(() => _showCelebration = false),
+            ),
+        ],
       ),
     );
   }
