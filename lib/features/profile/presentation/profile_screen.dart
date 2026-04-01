@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../services/providers.dart';
+import '../../export/presentation/export_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -172,6 +173,19 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Export button
+          GlowButton(
+            label: 'Esporta Dati',
+            icon: Icons.download,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ExportScreen()),
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.md),
 
