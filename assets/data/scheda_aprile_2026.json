@@ -1,0 +1,617 @@
+{
+  "id": "plan-aprile-2026",
+  "name": "Scheda Aprile 2026 - Ricomposizione Corporea",
+  "startDate": "2026-04-01T00:00:00.000",
+  "totalWeeks": 12,
+  "phases": [
+    {
+      "number": 1,
+      "name": "Costruire le Fondamenta",
+      "weekStart": 1,
+      "weekEnd": 4,
+      "description": "Rep range 8-15, RPE 7-8, focus tecnica e carichi base",
+      "deloadWeek": 4
+    },
+    {
+      "number": 2,
+      "name": "Forza e Ipertrofia",
+      "weekStart": 5,
+      "weekEnd": 8,
+      "description": "5x6 compound, RPE 8-8.5, drop set su isolamento, 1 HIIT",
+      "deloadWeek": 4
+    },
+    {
+      "number": 3,
+      "name": "Intensificazione e Definizione",
+      "weekStart": 9,
+      "weekEnd": 12,
+      "description": "Rest-pause, superserie, RPE 8.5-9, 2 HIIT + 1 LISS",
+      "deloadWeek": 4
+    }
+  ],
+  "days": [
+    {
+      "id": "day-monday",
+      "dayOfWeek": 1,
+      "name": "Petto + Tricipiti",
+      "warmup": [
+        "Camminata tapis roulant 5 min a 5 km/h pendenza 3%",
+        "Rotazioni braccia avanti e indietro: 15 per direzione",
+        "Band pull-apart con elastico: 2x15",
+        "Push-up lenti: 2x10",
+        "Distensioni panca vuota (solo bilanciere): 1x15"
+      ],
+      "hasCardio": true,
+      "cardioDescription": "Camminata tapis roulant 25 min, 5.5 km/h, pendenza 12%",
+      "exercises": [
+        {
+          "id": "mon-1",
+          "name": "Distensioni panca inclinata 30\u00b0",
+          "equipment": "Bilanciere + panca regolabile",
+          "muscleGroup": "chest",
+          "sets": 4,
+          "reps": 8,
+          "suggestedWeight": 40,
+          "restSeconds": 120,
+          "rpe": 8,
+          "notes": "Scendi fino a toccare la parte alta del petto. Gomiti a 45 gradi."
+        },
+        {
+          "id": "mon-2",
+          "name": "Distensioni panca piana",
+          "equipment": "Bilanciere + panca piana",
+          "muscleGroup": "chest",
+          "sets": 4,
+          "reps": 8,
+          "suggestedWeight": 50,
+          "restSeconds": 120,
+          "rpe": 8,
+          "notes": "Discesa controllata 3 sec."
+        },
+        {
+          "id": "mon-3",
+          "name": "Croci su panca inclinata 30\u00b0",
+          "equipment": "Manubri",
+          "muscleGroup": "chest",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 22,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Arco ampio, senti lo stiramento del pettorale."
+        },
+        {
+          "id": "mon-4",
+          "name": "Croci ai cavi dal basso",
+          "equipment": "Cable Crossover",
+          "muscleGroup": "chest",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 15,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Cavi dal basso verso l'alto per parte clavicolare. Incrocia le mani."
+        },
+        {
+          "id": "mon-5",
+          "name": "French press con manubrio",
+          "equipment": "Manubrio Hexagon",
+          "muscleGroup": "triceps",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 27,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Sdraiato su panca. Scendi dietro la testa lentamente 3 sec. Gomiti fermi."
+        },
+        {
+          "id": "mon-6",
+          "name": "Push down al cavo barra dritta",
+          "equipment": "Cable Crossover",
+          "muscleGroup": "triceps",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 25,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Gomiti incollati al corpo. Contrai forte in basso."
+        },
+        {
+          "id": "mon-7",
+          "name": "Dip su macchina assistita",
+          "equipment": "Dip/Pull-up Assist",
+          "muscleGroup": "triceps",
+          "sets": 3,
+          "reps": 10,
+          "suggestedWeight": 0,
+          "restSeconds": 90,
+          "rpe": 7,
+          "notes": "Busto leggermente in avanti per petto+tricipiti."
+        }
+      ]
+    },
+    {
+      "id": "day-tuesday",
+      "dayOfWeek": 2,
+      "name": "Dorso + Bicipiti",
+      "warmup": [
+        "Vogatore o ellittica 5 min a intensita bassa",
+        "Rotazioni spalle con elastico: 2x15",
+        "Dead hang alla sbarra: 2x20 secondi",
+        "Face pull leggero con elastico: 2x15",
+        "Trazioni assistite lente: 1x8"
+      ],
+      "hasCardio": true,
+      "cardioDescription": "Camminata tapis roulant 25 min, 5.5 km/h, pendenza 12%",
+      "exercises": [
+        {
+          "id": "tue-1",
+          "name": "Trazioni Lat Machine presa larga",
+          "equipment": "Lat Machine Selection",
+          "muscleGroup": "back",
+          "sets": 4,
+          "reps": 10,
+          "suggestedWeight": 50,
+          "restSeconds": 120,
+          "rpe": 8,
+          "notes": "Presa poco piu larga delle spalle, tira verso il petto alto."
+        },
+        {
+          "id": "tue-2",
+          "name": "Rematore con bilanciere busto flesso",
+          "equipment": "Bilanciere",
+          "muscleGroup": "back",
+          "sets": 4,
+          "reps": 8,
+          "suggestedWeight": 75,
+          "restSeconds": 120,
+          "rpe": 8,
+          "notes": "Busto a 45 gradi, tira verso l'ombelico."
+        },
+        {
+          "id": "tue-3",
+          "name": "Pulley basso presa stretta triangolo",
+          "equipment": "Unica (Pulley)",
+          "muscleGroup": "back",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 40,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Schiena dritta, tira verso il basso ventre, stringi scapole 2 sec."
+        },
+        {
+          "id": "tue-4",
+          "name": "Pull-down braccio singolo al cavo",
+          "equipment": "Cable Stations 4",
+          "muscleGroup": "back",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 30,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Concentrati sulla contrazione del dorsale."
+        },
+        {
+          "id": "tue-5",
+          "name": "Face pull",
+          "equipment": "Cable Crossover (cavo alto)",
+          "muscleGroup": "shoulders",
+          "sets": 4,
+          "reps": 15,
+          "suggestedWeight": 20,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Fondamentale per deltoide posteriore e salute spalle. Rotazione esterna."
+        },
+        {
+          "id": "tue-6",
+          "name": "Curl bilanciere in piedi",
+          "equipment": "Bilanciere EZ",
+          "muscleGroup": "biceps",
+          "sets": 3,
+          "reps": 10,
+          "suggestedWeight": 25,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Non oscillare. Concentrica esplosiva, eccentrica 3 sec."
+        },
+        {
+          "id": "tue-7",
+          "name": "Curl manubri su panca inclinata 45\u00b0",
+          "equipment": "Manubri + panca regolabile",
+          "muscleGroup": "biceps",
+          "sets": 3,
+          "reps": 10,
+          "suggestedWeight": 14,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Massimo stiramento del bicipite. 12-14kg."
+        },
+        {
+          "id": "tue-8",
+          "name": "Curl al cavo basso con corda",
+          "equipment": "Cable Crossover",
+          "muscleGroup": "biceps",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 20,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Finisher bicipiti. Contrai e apri la corda in cima."
+        }
+      ]
+    },
+    {
+      "id": "day-wednesday",
+      "dayOfWeek": 3,
+      "name": "Gambe + Core",
+      "warmup": [
+        "Cyclette 5 min a resistenza bassa",
+        "Bodyweight squat: 2x15",
+        "Affondi camminati a corpo libero: 1x10 per gamba",
+        "Leg curl leggero: 1x15 (attivazione femorali)",
+        "Mobilita anche: 90/90 stretch, 1 min per lato"
+      ],
+      "hasCardio": false,
+      "cardioDescription": "",
+      "exercises": [
+        {
+          "id": "wed-1",
+          "name": "Squat al Multipower",
+          "equipment": "Multipower (Smith Machine)",
+          "muscleGroup": "legs",
+          "sets": 4,
+          "reps": 8,
+          "suggestedWeight": 60,
+          "restSeconds": 120,
+          "rpe": 8,
+          "notes": "Scendi almeno al parallelo. Piedi larghezza spalle."
+        },
+        {
+          "id": "wed-2",
+          "name": "Leg Press",
+          "equipment": "Leg Press Pure Strength",
+          "muscleGroup": "legs",
+          "sets": 4,
+          "reps": 10,
+          "suggestedWeight": 120,
+          "restSeconds": 120,
+          "rpe": 8,
+          "notes": "Piedi al centro pedana. Scendi fino a 90 gradi ginocchio."
+        },
+        {
+          "id": "wed-3",
+          "name": "Stacco rumeno",
+          "equipment": "Bilanciere",
+          "muscleGroup": "legs",
+          "sets": 4,
+          "reps": 10,
+          "suggestedWeight": 60,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Ginocchia leggermente flesse, scendi fino a meta tibia."
+        },
+        {
+          "id": "wed-4",
+          "name": "Leg Curl prono",
+          "equipment": "Prone Leg Curl Technogym",
+          "muscleGroup": "legs",
+          "sets": 4,
+          "reps": 10,
+          "suggestedWeight": 25,
+          "restSeconds": 90,
+          "rpe": 8,
+          "notes": "Contrai glutei. Eccentrica lenta 3 sec."
+        },
+        {
+          "id": "wed-5",
+          "name": "Leg Extension",
+          "equipment": "Leg Extension Selection",
+          "muscleGroup": "legs",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 30,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Finisher quadricipiti. Contrai forte in cima, tieni 2 sec."
+        },
+        {
+          "id": "wed-6",
+          "name": "Hip Thrust alla macchina",
+          "equipment": "Hip Thrust Machine",
+          "muscleGroup": "glutes",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 40,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Contrai glutei FORTE in cima per 2 sec."
+        },
+        {
+          "id": "wed-7",
+          "name": "Calf Raise seduto",
+          "equipment": "Calf Raise Machine",
+          "muscleGroup": "calves",
+          "sets": 4,
+          "reps": 15,
+          "suggestedWeight": 30,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Pausa 2 sec in basso e 2 sec in alto."
+        },
+        {
+          "id": "wed-8",
+          "name": "Crunch alla corda cavo alto",
+          "equipment": "Cable Crossover",
+          "muscleGroup": "core",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 25,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Corda ai lati della testa, fletti il busto."
+        },
+        {
+          "id": "wed-9",
+          "name": "Plank",
+          "equipment": "Corpo libero",
+          "muscleGroup": "core",
+          "sets": 3,
+          "reps": 1,
+          "suggestedWeight": 0,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Tenere 45 secondi per serie. Stabilita core e salute schiena."
+        }
+      ]
+    },
+    {
+      "id": "day-thursday",
+      "dayOfWeek": 4,
+      "name": "Spalle + Trapezi + Core",
+      "warmup": [
+        "Camminata tapis roulant 5 min a 5 km/h pendenza 3%",
+        "Rotazioni spalle con disco leggero 5kg: 2x10",
+        "Alzate laterali con elastico: 2x15",
+        "Band pull-apart: 2x15",
+        "Shoulder press leggero manubri: 1x12"
+      ],
+      "hasCardio": true,
+      "cardioDescription": "Camminata tapis roulant 25 min, 5.5 km/h, pendenza 12%",
+      "exercises": [
+        {
+          "id": "thu-1",
+          "name": "Lento avanti con manubri seduto",
+          "equipment": "Manubri + panca 85 gradi",
+          "muscleGroup": "shoulders",
+          "sets": 4,
+          "reps": 10,
+          "suggestedWeight": 20,
+          "restSeconds": 120,
+          "rpe": 8,
+          "notes": "Non bloccare gomiti in alto. Scendi fino alle orecchie."
+        },
+        {
+          "id": "thu-2",
+          "name": "Alzate laterali con manubri",
+          "equipment": "Manubri",
+          "muscleGroup": "shoulders",
+          "sets": 4,
+          "reps": 12,
+          "suggestedWeight": 6,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Leggera inclinazione avanti, guida con gomiti. Ferma 1 sec in alto."
+        },
+        {
+          "id": "thu-3",
+          "name": "Alzate laterali al cavo singolo",
+          "equipment": "Cable Crossover",
+          "muscleGroup": "shoulders",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 7.5,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Il cavo mantiene tensione costante. Posizionati di lato."
+        },
+        {
+          "id": "thu-4",
+          "name": "Face pull",
+          "equipment": "Cable Crossover (cavo alto)",
+          "muscleGroup": "shoulders",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 20,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Seconda sessione settimanale. Ruota esternamente le mani."
+        },
+        {
+          "id": "thu-5",
+          "name": "Rear delt fly alla macchina",
+          "equipment": "Pec Fly/Rear Delt (posizione inversa)",
+          "muscleGroup": "shoulders",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 15,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Siediti al contrario sulla pec fly. Deltoide posteriore."
+        },
+        {
+          "id": "thu-6",
+          "name": "Shrug con manubri",
+          "equipment": "Manubri pesanti",
+          "muscleGroup": "traps",
+          "sets": 4,
+          "reps": 12,
+          "suggestedWeight": 30,
+          "restSeconds": 90,
+          "rpe": 7.5,
+          "notes": "Alza spalle verso orecchie, tieni 2 sec. Non ruotare."
+        },
+        {
+          "id": "thu-7",
+          "name": "Crunch bicicletta",
+          "equipment": "Corpo libero",
+          "muscleGroup": "core",
+          "sets": 3,
+          "reps": 20,
+          "suggestedWeight": 0,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Lento e controllato. 20 per lato."
+        },
+        {
+          "id": "thu-8",
+          "name": "Flessioni ginocchia appeso",
+          "equipment": "Universe DAP",
+          "muscleGroup": "core",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 0,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Ginocchia al petto, non solo a 90 gradi. Scendi lentamente."
+        }
+      ]
+    },
+    {
+      "id": "day-friday",
+      "dayOfWeek": 5,
+      "name": "Upper Pump + Braccia + Core",
+      "warmup": [
+        "Camminata tapis roulant 4 min a 5 km/h",
+        "Rotazioni braccia: 1x15 per direzione",
+        "Push-up leggeri: 1x10",
+        "Curl elastico: 1x15"
+      ],
+      "hasCardio": true,
+      "cardioDescription": "Camminata 25 min pendenza 12% oppure Stairmaster 15 min",
+      "exercises": [
+        {
+          "id": "fri-1",
+          "name": "Chest press alla macchina",
+          "equipment": "Chest Press Selection",
+          "muscleGroup": "chest",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 30,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Pump petto senza stressare le articolazioni."
+        },
+        {
+          "id": "fri-2",
+          "name": "Lat pulldown presa stretta inversa",
+          "equipment": "Lat Machine Selection",
+          "muscleGroup": "back",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 40,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Presa supina, tira verso il petto basso."
+        },
+        {
+          "id": "fri-3",
+          "name": "Curl bilanciere EZ",
+          "equipment": "Bilanciere EZ",
+          "muscleGroup": "biceps",
+          "sets": 4,
+          "reps": 10,
+          "suggestedWeight": 25,
+          "restSeconds": 90,
+          "rpe": 8,
+          "notes": "Eccentrica 3 sec, non oscillare."
+        },
+        {
+          "id": "fri-4",
+          "name": "Curl concentrato con manubrio",
+          "equipment": "Manubrio",
+          "muscleGroup": "biceps",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 12,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Gomito su coscia. Isola il bicipite. Picco contrazione 2 sec."
+        },
+        {
+          "id": "fri-5",
+          "name": "Push down al cavo con corda",
+          "equipment": "Cable Crossover",
+          "muscleGroup": "triceps",
+          "sets": 4,
+          "reps": 12,
+          "suggestedWeight": 25,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Apri la corda alla fine del movimento."
+        },
+        {
+          "id": "fri-6",
+          "name": "Estensioni sopra la testa al cavo",
+          "equipment": "Universe DAP",
+          "muscleGroup": "triceps",
+          "sets": 3,
+          "reps": 12,
+          "suggestedWeight": 23,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Di spalle al cavo, spingi sopra la testa. Capo lungo tricipite."
+        },
+        {
+          "id": "fri-7",
+          "name": "Leg Curl prono leggero",
+          "equipment": "Prone Leg Curl",
+          "muscleGroup": "legs",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 20,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Mantenimento femorali, carico leggero."
+        },
+        {
+          "id": "fri-8",
+          "name": "Leg Extension leggero",
+          "equipment": "Leg Extension Selection",
+          "muscleGroup": "legs",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 25,
+          "restSeconds": 60,
+          "rpe": 7,
+          "notes": "Mantenimento quadricipiti, focus contrazione in alto."
+        },
+        {
+          "id": "fri-9",
+          "name": "Crunch su panca declinata",
+          "equipment": "Panca addominali declinata",
+          "muscleGroup": "core",
+          "sets": 3,
+          "reps": 15,
+          "suggestedWeight": 5,
+          "restSeconds": 60,
+          "rpe": 7.5,
+          "notes": "Tieni disco 5kg al petto."
+        },
+        {
+          "id": "fri-10",
+          "name": "Vacuum addominale",
+          "equipment": "Corpo libero",
+          "muscleGroup": "core",
+          "sets": 3,
+          "reps": 1,
+          "suggestedWeight": 0,
+          "restSeconds": 30,
+          "rpe": 0,
+          "notes": "Espira tutta l'aria, risucchia pancia. Tenere 20 sec. Riduce girovita."
+        }
+      ]
+    }
+  ]
+}
