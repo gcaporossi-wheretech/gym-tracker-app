@@ -198,7 +198,7 @@ class ProfileScreen extends ConsumerWidget {
               children: [
                 Text('Info', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
-                const _InfoRow(label: 'Versione', value: '1.0.41'),
+                const _InfoRow(label: 'Versione', value: '1.0.42'),
                 const _InfoRow(label: 'Framework', value: 'Flutter PWA'),
                 const _InfoRow(label: 'Storage', value: 'Locale (offline)'),
               ],
