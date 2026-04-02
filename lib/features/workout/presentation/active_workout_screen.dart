@@ -193,56 +193,107 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             minHeight: 3,
           ),
 
-          // Exercise list
+          // Exercise list with warmup + reorder + add
           Expanded(
-            child: ListView.builder(
+            child: ListView(
               padding: const EdgeInsets.all(AppSpacing.md),
-              itemCount: sessionState.session.exercises.length,
-              itemBuilder: (context, index) {
-                final exercise = sessionState.session.exercises[index];
-                final plan = widget.dayPlan.exercises[index];
-                final isCurrent = index == sessionState.currentExerciseIndex;
+              children: [
+                // Warmup section (GYM-20)
+                if (widget.dayPlan.warmup.isNotEmpty)
+                  _WarmupChecklist(warmup: widget.dayPlan.warmup),
 
-                return _ExerciseSetTracker(
-                  exercise: exercise,
-                  plan: plan,
-                  exerciseIndex: index,
-                  isCurrent: isCurrent,
-                  onSetCompleted: (setIndex, weight, reps) {
-                    _onSetCompleted(index, setIndex, weight, reps);
-                  },
-                  onUndoSet: (setIndex) {
-                    ref.read(activeSessionProvider.notifier).undoSet(
-                      exerciseIndex: index, setIndex: setIndex,
-                    );
-                  },
-                  onRemoveSet: (setIndex) {
-                    ref.read(activeSessionProvider.notifier).removeSet(
-                      exerciseIndex: index, setIndex: setIndex,
-                    );
-                  },
-                  onAddSet: () {
-                    ref.read(activeSessionProvider.notifier).addSet(
-                      exerciseIndex: index,
-                    );
-                  },
-                  onApplyWeightToAll: (weight) {
-                    ref.read(activeSessionProvider.notifier).applyWeightToAll(
-                      exerciseIndex: index,
-                      weight: weight,
-                    );
-                  },
-                  onSkip: () {
-                    ref.read(activeSessionProvider.notifier).skipExercise(index);
-                  },
-                  onUnskip: () {
-                    ref.read(activeSessionProvider.notifier).unskipExercise(index);
-                  },
-                  onTap: () {
-                    ref.read(activeSessionProvider.notifier).goToExercise(index);
-                  },
-                );
-              },
+                // Exercise list
+                ...sessionState.session.exercises.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final exercise = entry.value;
+                  // Find matching plan by exercisePlanId
+                  final planMatches = widget.dayPlan.exercises.where((p) => p.id == exercise.exercisePlanId);
+                  final plan = planMatches.isNotEmpty
+                      ? planMatches.first
+                      : ExercisePlan(
+                          id: exercise.exercisePlanId,
+                          name: exercise.exerciseName,
+                          equipment: '',
+                          muscleGroup: exercise.muscleGroup,
+                          sets: exercise.sets.length,
+                          reps: exercise.sets.isNotEmpty ? exercise.sets.first.plannedReps : 8,
+                        );
+                  final isCurrent = index == sessionState.currentExerciseIndex;
+
+                  return Column(
+                    children: [
+                      _ExerciseSetTracker(
+                        exercise: exercise,
+                        plan: plan,
+                        exerciseIndex: index,
+                        isCurrent: isCurrent,
+                        onSetCompleted: (setIndex, weight, reps) {
+                          _onSetCompleted(index, setIndex, weight, reps);
+                        },
+                        onUndoSet: (setIndex) {
+                          ref.read(activeSessionProvider.notifier).undoSet(
+                            exerciseIndex: index, setIndex: setIndex,
+                          );
+                        },
+                        onRemoveSet: (setIndex) {
+                          ref.read(activeSessionProvider.notifier).removeSet(
+                            exerciseIndex: index, setIndex: setIndex,
+                          );
+                        },
+                        onAddSet: () {
+                          ref.read(activeSessionProvider.notifier).addSet(
+                            exerciseIndex: index,
+                          );
+                        },
+                        onApplyWeightToAll: (weight) {
+                          ref.read(activeSessionProvider.notifier).applyWeightToAll(
+                            exerciseIndex: index,
+                            weight: weight,
+                          );
+                        },
+                        onSkip: () {
+                          ref.read(activeSessionProvider.notifier).skipExercise(index);
+                        },
+                        onUnskip: () {
+                          ref.read(activeSessionProvider.notifier).unskipExercise(index);
+                        },
+                        onTap: () {
+                          ref.read(activeSessionProvider.notifier).goToExercise(index);
+                        },
+                      ),
+                      // Reorder buttons (GYM-27)
+                      if (isCurrent && !exercise.skipped)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (index > 0)
+                              IconButton(
+                                icon: const Icon(Icons.arrow_upward, size: 18, color: AppColors.textSecondary),
+                                onPressed: () => ref.read(activeSessionProvider.notifier).moveExercise(index, index - 1),
+                                tooltip: 'Sposta su',
+                              ),
+                            if (index < sessionState.session.exercises.length - 1)
+                              IconButton(
+                                icon: const Icon(Icons.arrow_downward, size: 18, color: AppColors.textSecondary),
+                                onPressed: () => ref.read(activeSessionProvider.notifier).moveExercise(index, index + 1),
+                                tooltip: 'Sposta giu',
+                              ),
+                          ],
+                        ),
+                    ],
+                  );
+                }),
+
+                // Add exercise button (GYM-26)
+                const SizedBox(height: AppSpacing.sm),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () => _showAddExerciseDialog(context, ref),
+                    icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                    label: const Text('Aggiungi esercizio', style: TextStyle(color: AppColors.primary)),
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -298,6 +349,153 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             },
             child: const Text('Esci e salva', style: TextStyle(color: AppColors.warning)),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Dialog per aggiungere esercizio (GYM-26)
+  void _showAddExerciseDialog(BuildContext context, WidgetRef ref) {
+    final nameController = TextEditingController();
+    final setsController = TextEditingController(text: '3');
+    final repsController = TextEditingController(text: '12');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        title: const Text('Aggiungi esercizio'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Nome esercizio'),
+              autofocus: true,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(child: TextField(
+                  controller: setsController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Serie'),
+                )),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(child: TextField(
+                  controller: repsController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Rep'),
+                )),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
+          TextButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              if (name.isEmpty) return;
+              ref.read(activeSessionProvider.notifier).addCustomExercise(
+                name: name,
+                sets: int.tryParse(setsController.text) ?? 3,
+                reps: int.tryParse(repsController.text) ?? 12,
+              );
+              Navigator.pop(ctx);
+            },
+            child: const Text('Aggiungi', style: TextStyle(color: AppColors.success)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Warmup checklist (GYM-20)
+class _WarmupChecklist extends StatefulWidget {
+  const _WarmupChecklist({required this.warmup});
+  final List<String> warmup;
+
+  @override
+  State<_WarmupChecklist> createState() => _WarmupChecklistState();
+}
+
+class _WarmupChecklistState extends State<_WarmupChecklist> {
+  late List<bool> _checked;
+  bool _expanded = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checked = List.filled(widget.warmup.length, false);
+  }
+
+  bool get _allDone => _checked.every((c) => c);
+  int get _doneCount => _checked.where((c) => c).length;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassmorphismCard(
+      borderColor: _allDone
+          ? AppColors.success.withValues(alpha: 0.3)
+          : AppColors.warning.withValues(alpha: 0.3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Row(
+              children: [
+                Icon(
+                  _allDone ? Icons.check_circle : Icons.whatshot,
+                  color: _allDone ? AppColors.success : AppColors.warning,
+                  size: 20,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    _allDone ? 'Riscaldamento completato!' : 'Riscaldamento ($_doneCount/${widget.warmup.length})',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Icon(_expanded ? Icons.expand_less : Icons.expand_more, color: AppColors.textSecondary),
+              ],
+            ),
+          ),
+          if (_expanded) ...[
+            const SizedBox(height: AppSpacing.sm),
+            ...widget.warmup.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final step = entry.value;
+              return GestureDetector(
+                onTap: () => setState(() => _checked[idx] = !_checked[idx]),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _checked[idx] ? Icons.check_box : Icons.check_box_outline_blank,
+                        color: _checked[idx] ? AppColors.success : AppColors.textSecondary,
+                        size: 22,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          step,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _checked[idx] ? AppColors.textSecondary : AppColors.textPrimary,
+                            decoration: _checked[idx] ? TextDecoration.lineThrough : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
         ],
       ),
     );

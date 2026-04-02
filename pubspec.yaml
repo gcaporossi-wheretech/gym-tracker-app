@@ -1,7 +1,7 @@
 name: gym_tracker_app
 description: "GymTracker - App per gestione allenamenti in palestra"
 publish_to: 'none'
-version: 1.1.45
+version: 1.2.46
 
 environment:
   sdk: ^3.8.1
