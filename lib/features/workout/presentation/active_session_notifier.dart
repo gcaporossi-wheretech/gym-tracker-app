@@ -48,17 +48,45 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
   SessionRepository get _sessionRepo => ref.read(sessionRepositoryProvider);
 
-  /// Avvia una nuova sessione dal DayPlan
-  void startSession(DayPlan dayPlan) {
+  /// Avvia una nuova sessione dal DayPlan, con pre-fill pesi dall'ultima volta (GYM-23)
+  Future<void> startSession(DayPlan dayPlan) async {
+    // Cerca l'ultima sessione per questo workout
+    final allSessions = await _sessionRepo.getAllSessions();
+    final lastSession = allSessions
+        .where((s) => s.dayPlanId == dayPlan.id && s.completed)
+        .toList();
+    final previous = lastSession.isNotEmpty ? lastSession.first : null;
     final exercises = dayPlan.exercises.map((ep) {
+      // Find previous weights for this exercise (GYM-23)
+      ExerciseLog? prevExercise;
+      if (previous != null) {
+        final matches = previous.exercises.where((e) => e.exercisePlanId == ep.id);
+        if (matches.isNotEmpty) prevExercise = matches.first;
+      }
+
       return ExerciseLog(
         exercisePlanId: ep.id,
         exerciseName: ep.name,
         muscleGroup: ep.muscleGroup,
-        sets: List.generate(
-          ep.sets,
-          (i) => SetLog(setNumber: i + 1, plannedReps: ep.reps),
-        ),
+        sets: List.generate(ep.sets, (i) {
+          // Pre-fill weight from last session's corresponding set
+          double prefillWeight = ep.suggestedWeight;
+          if (prevExercise != null && i < prevExercise.sets.length) {
+            final prevSet = prevExercise.sets[i];
+            if (prevSet.completed && prevSet.weight > 0) {
+              prefillWeight = prevSet.weight;
+            }
+          } else if (prevExercise != null && prevExercise.sets.isNotEmpty) {
+            // Use last available set weight
+            final lastCompleted = prevExercise.sets.where((s) => s.completed && s.weight > 0);
+            if (lastCompleted.isNotEmpty) prefillWeight = lastCompleted.last.weight;
+          }
+          return SetLog(
+            setNumber: i + 1,
+            plannedReps: ep.reps,
+            weight: prefillWeight,
+          );
+        }),
       );
     }).toList();
 
@@ -205,6 +233,28 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       setNumber: sets.length + 1,
       plannedReps: lastSet.plannedReps,
     ));
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+    );
+    _save();
+  }
+
+  /// Applica peso a tutte le serie non completate di un esercizio
+  void applyWeightToAll({required int exerciseIndex, required double weight}) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    final exercise = exercises[exerciseIndex];
+    final sets = List<SetLog>.from(exercise.sets);
+
+    for (var i = 0; i < sets.length; i++) {
+      if (!sets[i].completed) {
+        sets[i] = sets[i].copyWith(weight: weight);
+      }
+    }
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);
 
     state = s.copyWith(

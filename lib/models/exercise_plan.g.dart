@@ -18,6 +18,7 @@ _$ExercisePlanImpl _$$ExercisePlanImplFromJson(Map<String, dynamic> json) =>
       restSeconds: (json['restSeconds'] as num?)?.toInt() ?? 90,
       rpe: (json['rpe'] as num?)?.toDouble() ?? 0,
       notes: json['notes'] as String? ?? '',
+      exerciseType: json['exerciseType'] as String? ?? 'weighted',
     );
 
 Map<String, dynamic> _$$ExercisePlanImplToJson(_$ExercisePlanImpl instance) =>
@@ -32,4 +33,5 @@ Map<String, dynamic> _$$ExercisePlanImplToJson(_$ExercisePlanImpl instance) =>
       'restSeconds': instance.restSeconds,
       'rpe': instance.rpe,
       'notes': instance.notes,
+      'exerciseType': instance.exerciseType,
     };

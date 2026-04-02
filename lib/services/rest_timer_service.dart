@@ -3,37 +3,44 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 /// Service per il timer di recupero tra le serie.
-/// Gestisce countdown, notifica completamento, e azioni +30s/skip.
+/// Usa timestamp assoluto cosi il timer prosegue anche fuori dall'app (GYM-22).
 class RestTimerService extends ChangeNotifier {
   Timer? _timer;
-  int _remainingSeconds = 0;
+  DateTime? _endTime;
   int _totalSeconds = 0;
   bool _isRunning = false;
 
-  int get remainingSeconds => _remainingSeconds;
+  int get remainingSeconds {
+    if (_endTime == null) return 0;
+    final remaining = _endTime!.difference(DateTime.now()).inSeconds;
+    return remaining > 0 ? remaining : 0;
+  }
+
   int get totalSeconds => _totalSeconds;
-  bool get isRunning => _isRunning;
-  double get progress =>
-      _totalSeconds > 0 ? 1.0 - (_remainingSeconds / _totalSeconds) : 0;
+  bool get isRunning => _isRunning && remainingSeconds > 0;
+
+  double get progress {
+    if (_totalSeconds <= 0) return 0;
+    return 1.0 - (remainingSeconds / _totalSeconds);
+  }
 
   String get formattedTime {
-    final min = _remainingSeconds ~/ 60;
-    final sec = _remainingSeconds % 60;
-    return '${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+    final sec = remainingSeconds;
+    final min = sec ~/ 60;
+    final s = sec % 60;
+    return '${min.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   /// Avvia il timer con i secondi specificati
   void start(int seconds) {
     stop();
     _totalSeconds = seconds;
-    _remainingSeconds = seconds;
+    _endTime = DateTime.now().add(Duration(seconds: seconds));
     _isRunning = true;
     notifyListeners();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _remainingSeconds--;
-      if (_remainingSeconds <= 0) {
-        _remainingSeconds = 0;
+      if (remainingSeconds <= 0) {
         _isRunning = false;
         _timer?.cancel();
         _timer = null;
@@ -44,14 +51,14 @@ class RestTimerService extends ChangeNotifier {
 
   /// Aggiungi 30 secondi
   void addThirtySeconds() {
-    _remainingSeconds += 30;
-    _totalSeconds += 30;
+    if (_endTime != null) {
+      _endTime = _endTime!.add(const Duration(seconds: 30));
+      _totalSeconds += 30;
+    }
     if (!_isRunning) {
       _isRunning = true;
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        _remainingSeconds--;
-        if (_remainingSeconds <= 0) {
-          _remainingSeconds = 0;
+        if (remainingSeconds <= 0) {
           _isRunning = false;
           _timer?.cancel();
           _timer = null;
@@ -71,7 +78,7 @@ class RestTimerService extends ChangeNotifier {
   void stop() {
     _timer?.cancel();
     _timer = null;
-    _remainingSeconds = 0;
+    _endTime = null;
     _totalSeconds = 0;
     _isRunning = false;
     notifyListeners();

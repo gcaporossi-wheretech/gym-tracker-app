@@ -16,6 +16,7 @@ class ExercisePlan with _$ExercisePlan {
     @Default(90) int restSeconds,
     @Default(0) double rpe,
     @Default('') String notes,
+    @Default('weighted') String exerciseType, // weighted, timed, bodyweight
   }) = _ExercisePlan;
 
   factory ExercisePlan.fromJson(Map<String, dynamic> json) =>

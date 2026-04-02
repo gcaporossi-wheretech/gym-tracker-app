@@ -14,6 +14,7 @@ _$SetLogImpl _$$SetLogImplFromJson(Map<String, dynamic> json) => _$SetLogImpl(
   rpe: (json['rpe'] as num?)?.toDouble() ?? 0,
   notes: json['notes'] as String? ?? '',
   completed: json['completed'] as bool? ?? false,
+  durationSeconds: (json['durationSeconds'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$$SetLogImplToJson(_$SetLogImpl instance) =>
@@ -25,4 +26,5 @@ Map<String, dynamic> _$$SetLogImplToJson(_$SetLogImpl instance) =>
       'rpe': instance.rpe,
       'notes': instance.notes,
       'completed': instance.completed,
+      'durationSeconds': instance.durationSeconds,
     };

@@ -46,7 +46,7 @@
       "exercises": [
         {
           "id": "mon-1",
-          "name": "Distensioni panca inclinata 30\u00b0",
+          "name": "Distensioni panca inclinata 30°",
           "equipment": "Bilanciere + panca regolabile",
           "muscleGroup": "chest",
           "sets": 4,
@@ -54,7 +54,8 @@
           "suggestedWeight": 40,
           "restSeconds": 120,
           "rpe": 8,
-          "notes": "Scendi fino a toccare la parte alta del petto. Gomiti a 45 gradi."
+          "notes": "Scendi fino a toccare la parte alta del petto. Gomiti a 45 gradi.",
+          "exerciseType": "weighted"
         },
         {
           "id": "mon-2",
@@ -66,11 +67,12 @@
           "suggestedWeight": 50,
           "restSeconds": 120,
           "rpe": 8,
-          "notes": "Discesa controllata 3 sec."
+          "notes": "Discesa controllata 3 sec.",
+          "exerciseType": "weighted"
         },
         {
           "id": "mon-3",
-          "name": "Croci su panca inclinata 30\u00b0",
+          "name": "Croci su panca inclinata 30°",
           "equipment": "Manubri",
           "muscleGroup": "chest",
           "sets": 3,
@@ -78,7 +80,8 @@
           "suggestedWeight": 22,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Arco ampio, senti lo stiramento del pettorale."
+          "notes": "Arco ampio, senti lo stiramento del pettorale.",
+          "exerciseType": "weighted"
         },
         {
           "id": "mon-4",
@@ -90,7 +93,8 @@
           "suggestedWeight": 15,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Cavi dal basso verso l'alto per parte clavicolare. Incrocia le mani."
+          "notes": "Cavi dal basso verso l'alto per parte clavicolare. Incrocia le mani.",
+          "exerciseType": "weighted"
         },
         {
           "id": "mon-5",
@@ -102,7 +106,8 @@
           "suggestedWeight": 27,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Sdraiato su panca. Scendi dietro la testa lentamente 3 sec. Gomiti fermi."
+          "notes": "Sdraiato su panca. Scendi dietro la testa lentamente 3 sec. Gomiti fermi.",
+          "exerciseType": "weighted"
         },
         {
           "id": "mon-6",
@@ -114,7 +119,8 @@
           "suggestedWeight": 25,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Gomiti incollati al corpo. Contrai forte in basso."
+          "notes": "Gomiti incollati al corpo. Contrai forte in basso.",
+          "exerciseType": "weighted"
         },
         {
           "id": "mon-7",
@@ -126,7 +132,8 @@
           "suggestedWeight": 0,
           "restSeconds": 90,
           "rpe": 7,
-          "notes": "Busto leggermente in avanti per petto+tricipiti."
+          "notes": "Busto leggermente in avanti per petto+tricipiti.",
+          "exerciseType": "weighted"
         }
       ]
     },
@@ -154,7 +161,8 @@
           "suggestedWeight": 50,
           "restSeconds": 120,
           "rpe": 8,
-          "notes": "Presa poco piu larga delle spalle, tira verso il petto alto."
+          "notes": "Presa poco piu larga delle spalle, tira verso il petto alto.",
+          "exerciseType": "weighted"
         },
         {
           "id": "tue-2",
@@ -166,7 +174,8 @@
           "suggestedWeight": 75,
           "restSeconds": 120,
           "rpe": 8,
-          "notes": "Busto a 45 gradi, tira verso l'ombelico."
+          "notes": "Busto a 45 gradi, tira verso l'ombelico.",
+          "exerciseType": "weighted"
         },
         {
           "id": "tue-3",
@@ -178,7 +187,8 @@
           "suggestedWeight": 40,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Schiena dritta, tira verso il basso ventre, stringi scapole 2 sec."
+          "notes": "Schiena dritta, tira verso il basso ventre, stringi scapole 2 sec.",
+          "exerciseType": "weighted"
         },
         {
           "id": "tue-4",
@@ -190,7 +200,8 @@
           "suggestedWeight": 30,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Concentrati sulla contrazione del dorsale."
+          "notes": "Concentrati sulla contrazione del dorsale.",
+          "exerciseType": "weighted"
         },
         {
           "id": "tue-5",
@@ -202,7 +213,8 @@
           "suggestedWeight": 20,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Fondamentale per deltoide posteriore e salute spalle. Rotazione esterna."
+          "notes": "Fondamentale per deltoide posteriore e salute spalle. Rotazione esterna.",
+          "exerciseType": "weighted"
         },
         {
           "id": "tue-6",
@@ -214,11 +226,12 @@
           "suggestedWeight": 25,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Non oscillare. Concentrica esplosiva, eccentrica 3 sec."
+          "notes": "Non oscillare. Concentrica esplosiva, eccentrica 3 sec.",
+          "exerciseType": "weighted"
         },
         {
           "id": "tue-7",
-          "name": "Curl manubri su panca inclinata 45\u00b0",
+          "name": "Curl manubri su panca inclinata 45°",
           "equipment": "Manubri + panca regolabile",
           "muscleGroup": "biceps",
           "sets": 3,
@@ -226,7 +239,8 @@
           "suggestedWeight": 14,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Massimo stiramento del bicipite. 12-14kg."
+          "notes": "Massimo stiramento del bicipite. 12-14kg.",
+          "exerciseType": "weighted"
         },
         {
           "id": "tue-8",
@@ -238,7 +252,8 @@
           "suggestedWeight": 20,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Finisher bicipiti. Contrai e apri la corda in cima."
+          "notes": "Finisher bicipiti. Contrai e apri la corda in cima.",
+          "exerciseType": "weighted"
         }
       ]
     },
@@ -266,7 +281,8 @@
           "suggestedWeight": 60,
           "restSeconds": 120,
           "rpe": 8,
-          "notes": "Scendi almeno al parallelo. Piedi larghezza spalle."
+          "notes": "Scendi almeno al parallelo. Piedi larghezza spalle.",
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-2",
@@ -278,7 +294,8 @@
           "suggestedWeight": 120,
           "restSeconds": 120,
           "rpe": 8,
-          "notes": "Piedi al centro pedana. Scendi fino a 90 gradi ginocchio."
+          "notes": "Piedi al centro pedana. Scendi fino a 90 gradi ginocchio.",
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-3",
@@ -290,7 +307,8 @@
           "suggestedWeight": 60,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Ginocchia leggermente flesse, scendi fino a meta tibia."
+          "notes": "Ginocchia leggermente flesse, scendi fino a meta tibia.",
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-4",
@@ -302,7 +320,8 @@
           "suggestedWeight": 25,
           "restSeconds": 90,
           "rpe": 8,
-          "notes": "Contrai glutei. Eccentrica lenta 3 sec."
+          "notes": "Contrai glutei. Eccentrica lenta 3 sec.",
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-5",
@@ -314,7 +333,8 @@
           "suggestedWeight": 30,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Finisher quadricipiti. Contrai forte in cima, tieni 2 sec."
+          "notes": "Finisher quadricipiti. Contrai forte in cima, tieni 2 sec.",
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-6",
@@ -326,7 +346,8 @@
           "suggestedWeight": 40,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Contrai glutei FORTE in cima per 2 sec."
+          "notes": "Contrai glutei FORTE in cima per 2 sec.",
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-7",
@@ -338,7 +359,8 @@
           "suggestedWeight": 30,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Pausa 2 sec in basso e 2 sec in alto."
+          "notes": "Pausa 2 sec in basso e 2 sec in alto.",
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-8",
@@ -350,7 +372,8 @@
           "suggestedWeight": 25,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Corda ai lati della testa, fletti il busto."
+          "notes": "Corda ai lati della testa, fletti il busto.",
+          "exerciseType": "bodyweight"
         },
         {
           "id": "wed-9",
@@ -362,7 +385,8 @@
           "suggestedWeight": 0,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Tenere 45 secondi per serie. Stabilita core e salute schiena."
+          "notes": "Tenere 45 secondi per serie. Stabilita core e salute schiena.",
+          "exerciseType": "timed"
         }
       ]
     },
@@ -390,7 +414,8 @@
           "suggestedWeight": 20,
           "restSeconds": 120,
           "rpe": 8,
-          "notes": "Non bloccare gomiti in alto. Scendi fino alle orecchie."
+          "notes": "Non bloccare gomiti in alto. Scendi fino alle orecchie.",
+          "exerciseType": "weighted"
         },
         {
           "id": "thu-2",
@@ -402,7 +427,8 @@
           "suggestedWeight": 6,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Leggera inclinazione avanti, guida con gomiti. Ferma 1 sec in alto."
+          "notes": "Leggera inclinazione avanti, guida con gomiti. Ferma 1 sec in alto.",
+          "exerciseType": "weighted"
         },
         {
           "id": "thu-3",
@@ -414,7 +440,8 @@
           "suggestedWeight": 7.5,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Il cavo mantiene tensione costante. Posizionati di lato."
+          "notes": "Il cavo mantiene tensione costante. Posizionati di lato.",
+          "exerciseType": "weighted"
         },
         {
           "id": "thu-4",
@@ -426,7 +453,8 @@
           "suggestedWeight": 20,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Seconda sessione settimanale. Ruota esternamente le mani."
+          "notes": "Seconda sessione settimanale. Ruota esternamente le mani.",
+          "exerciseType": "weighted"
         },
         {
           "id": "thu-5",
@@ -438,7 +466,8 @@
           "suggestedWeight": 15,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Siediti al contrario sulla pec fly. Deltoide posteriore."
+          "notes": "Siediti al contrario sulla pec fly. Deltoide posteriore.",
+          "exerciseType": "weighted"
         },
         {
           "id": "thu-6",
@@ -450,7 +479,8 @@
           "suggestedWeight": 30,
           "restSeconds": 90,
           "rpe": 7.5,
-          "notes": "Alza spalle verso orecchie, tieni 2 sec. Non ruotare."
+          "notes": "Alza spalle verso orecchie, tieni 2 sec. Non ruotare.",
+          "exerciseType": "weighted"
         },
         {
           "id": "thu-7",
@@ -462,7 +492,8 @@
           "suggestedWeight": 0,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Lento e controllato. 20 per lato."
+          "notes": "Lento e controllato. 20 per lato.",
+          "exerciseType": "bodyweight"
         },
         {
           "id": "thu-8",
@@ -474,7 +505,8 @@
           "suggestedWeight": 0,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Ginocchia al petto, non solo a 90 gradi. Scendi lentamente."
+          "notes": "Ginocchia al petto, non solo a 90 gradi. Scendi lentamente.",
+          "exerciseType": "bodyweight"
         }
       ]
     },
@@ -501,7 +533,8 @@
           "suggestedWeight": 30,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Pump petto senza stressare le articolazioni."
+          "notes": "Pump petto senza stressare le articolazioni.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-2",
@@ -513,7 +546,8 @@
           "suggestedWeight": 40,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Presa supina, tira verso il petto basso."
+          "notes": "Presa supina, tira verso il petto basso.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-3",
@@ -525,7 +559,8 @@
           "suggestedWeight": 25,
           "restSeconds": 90,
           "rpe": 8,
-          "notes": "Eccentrica 3 sec, non oscillare."
+          "notes": "Eccentrica 3 sec, non oscillare.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-4",
@@ -537,7 +572,8 @@
           "suggestedWeight": 12,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Gomito su coscia. Isola il bicipite. Picco contrazione 2 sec."
+          "notes": "Gomito su coscia. Isola il bicipite. Picco contrazione 2 sec.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-5",
@@ -549,7 +585,8 @@
           "suggestedWeight": 25,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Apri la corda alla fine del movimento."
+          "notes": "Apri la corda alla fine del movimento.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-6",
@@ -561,7 +598,8 @@
           "suggestedWeight": 23,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Di spalle al cavo, spingi sopra la testa. Capo lungo tricipite."
+          "notes": "Di spalle al cavo, spingi sopra la testa. Capo lungo tricipite.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-7",
@@ -573,7 +611,8 @@
           "suggestedWeight": 20,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Mantenimento femorali, carico leggero."
+          "notes": "Mantenimento femorali, carico leggero.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-8",
@@ -585,7 +624,8 @@
           "suggestedWeight": 25,
           "restSeconds": 60,
           "rpe": 7,
-          "notes": "Mantenimento quadricipiti, focus contrazione in alto."
+          "notes": "Mantenimento quadricipiti, focus contrazione in alto.",
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-9",
@@ -597,7 +637,8 @@
           "suggestedWeight": 5,
           "restSeconds": 60,
           "rpe": 7.5,
-          "notes": "Tieni disco 5kg al petto."
+          "notes": "Tieni disco 5kg al petto.",
+          "exerciseType": "bodyweight"
         },
         {
           "id": "fri-10",
@@ -609,7 +650,8 @@
           "suggestedWeight": 0,
           "restSeconds": 30,
           "rpe": 0,
-          "notes": "Espira tutta l'aria, risucchia pancia. Tenere 20 sec. Riduce girovita."
+          "notes": "Espira tutta l'aria, risucchia pancia. Tenere 20 sec. Riduce girovita.",
+          "exerciseType": "timed"
         }
       ]
     }

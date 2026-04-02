@@ -23,7 +23,8 @@ void main() {
     test('start sets correct initial state', () {
       timer.start(120);
       expect(timer.isRunning, true);
-      expect(timer.remainingSeconds, 120);
+      // remainingSeconds is calculated from timestamp, allow 1 second tolerance
+      expect(timer.remainingSeconds, closeTo(120, 1));
       expect(timer.totalSeconds, 120);
     });
 
@@ -47,7 +48,7 @@ void main() {
     test('addThirtySeconds increases time', () {
       timer.start(60);
       timer.addThirtySeconds();
-      expect(timer.remainingSeconds, 90);
+      expect(timer.remainingSeconds, closeTo(90, 1));
       expect(timer.totalSeconds, 90);
     });
 
