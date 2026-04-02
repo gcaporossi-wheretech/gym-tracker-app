@@ -13,6 +13,7 @@ class SetLog with _$SetLog {
     @Default(0) double rpe,
     @Default('') String notes,
     @Default(false) bool completed,
+    @Default(0) int durationSeconds, // per esercizi a tempo (GYM-25)
   }) = _SetLog;
 
   factory SetLog.fromJson(Map<String, dynamic> json) => _$SetLogFromJson(json);

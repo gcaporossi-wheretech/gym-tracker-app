@@ -31,6 +31,7 @@ mixin _$ExercisePlan {
   int get restSeconds => throw _privateConstructorUsedError;
   double get rpe => throw _privateConstructorUsedError;
   String get notes => throw _privateConstructorUsedError;
+  String get exerciseType => throw _privateConstructorUsedError;
 
   /// Serializes this ExercisePlan to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -60,6 +61,7 @@ abstract class $ExercisePlanCopyWith<$Res> {
     int restSeconds,
     double rpe,
     String notes,
+    String exerciseType,
   });
 }
 
@@ -88,6 +90,7 @@ class _$ExercisePlanCopyWithImpl<$Res, $Val extends ExercisePlan>
     Object? restSeconds = null,
     Object? rpe = null,
     Object? notes = null,
+    Object? exerciseType = null,
   }) {
     return _then(
       _value.copyWith(
@@ -131,6 +134,10 @@ class _$ExercisePlanCopyWithImpl<$Res, $Val extends ExercisePlan>
                 ? _value.notes
                 : notes // ignore: cast_nullable_to_non_nullable
                       as String,
+            exerciseType: null == exerciseType
+                ? _value.exerciseType
+                : exerciseType // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -157,6 +164,7 @@ abstract class _$$ExercisePlanImplCopyWith<$Res>
     int restSeconds,
     double rpe,
     String notes,
+    String exerciseType,
   });
 }
 
@@ -184,6 +192,7 @@ class __$$ExercisePlanImplCopyWithImpl<$Res>
     Object? restSeconds = null,
     Object? rpe = null,
     Object? notes = null,
+    Object? exerciseType = null,
   }) {
     return _then(
       _$ExercisePlanImpl(
@@ -227,6 +236,10 @@ class __$$ExercisePlanImplCopyWithImpl<$Res>
             ? _value.notes
             : notes // ignore: cast_nullable_to_non_nullable
                   as String,
+        exerciseType: null == exerciseType
+            ? _value.exerciseType
+            : exerciseType // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -246,6 +259,7 @@ class _$ExercisePlanImpl implements _ExercisePlan {
     this.restSeconds = 90,
     this.rpe = 0,
     this.notes = '',
+    this.exerciseType = 'weighted',
   });
 
   factory _$ExercisePlanImpl.fromJson(Map<String, dynamic> json) =>
@@ -275,10 +289,13 @@ class _$ExercisePlanImpl implements _ExercisePlan {
   @override
   @JsonKey()
   final String notes;
+  @override
+  @JsonKey()
+  final String exerciseType;
 
   @override
   String toString() {
-    return 'ExercisePlan(id: $id, name: $name, equipment: $equipment, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, suggestedWeight: $suggestedWeight, restSeconds: $restSeconds, rpe: $rpe, notes: $notes)';
+    return 'ExercisePlan(id: $id, name: $name, equipment: $equipment, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, suggestedWeight: $suggestedWeight, restSeconds: $restSeconds, rpe: $rpe, notes: $notes, exerciseType: $exerciseType)';
   }
 
   @override
@@ -299,7 +316,9 @@ class _$ExercisePlanImpl implements _ExercisePlan {
             (identical(other.restSeconds, restSeconds) ||
                 other.restSeconds == restSeconds) &&
             (identical(other.rpe, rpe) || other.rpe == rpe) &&
-            (identical(other.notes, notes) || other.notes == notes));
+            (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.exerciseType, exerciseType) ||
+                other.exerciseType == exerciseType));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -316,6 +335,7 @@ class _$ExercisePlanImpl implements _ExercisePlan {
     restSeconds,
     rpe,
     notes,
+    exerciseType,
   );
 
   /// Create a copy of ExercisePlan
@@ -344,6 +364,7 @@ abstract class _ExercisePlan implements ExercisePlan {
     final int restSeconds,
     final double rpe,
     final String notes,
+    final String exerciseType,
   }) = _$ExercisePlanImpl;
 
   factory _ExercisePlan.fromJson(Map<String, dynamic> json) =
@@ -369,6 +390,8 @@ abstract class _ExercisePlan implements ExercisePlan {
   double get rpe;
   @override
   String get notes;
+  @override
+  String get exerciseType;
 
   /// Create a copy of ExercisePlan
   /// with the given fields replaced by the non-null parameter values.

@@ -14,11 +14,19 @@ class RestTimerOverlay extends StatelessWidget {
     required this.timer,
     required this.onSkip,
     required this.onAddThirty,
+    required this.onDismiss,
+    this.exerciseName,
+    this.currentSet,
+    this.totalSets,
   });
 
   final RestTimerService timer;
   final VoidCallback onSkip;
   final VoidCallback onAddThirty;
+  final VoidCallback onDismiss;
+  final String? exerciseName;
+  final int? currentSet;
+  final int? totalSets;
 
   @override
   Widget build(BuildContext context) {
@@ -32,20 +40,30 @@ class RestTimerOverlay extends StatelessWidget {
         final isFinished = !timer.isRunning && timer.remainingSeconds == 0;
         if (isFinished) return const SizedBox.shrink();
 
-        return Container(
-          color: AppColors.bgPrimary.withValues(alpha: 0.95),
-          child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'RECUPERO',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    letterSpacing: 2,
+        return GestureDetector(
+          onTap: onDismiss,
+          child: Container(
+            color: AppColors.bgPrimary.withValues(alpha: 0.95),
+            child: SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'RECUPERO',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      letterSpacing: 2,
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
+                  if (exerciseName != null && currentSet != null) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Serie $currentSet/$totalSets - $exerciseName',
+                      style: const TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.xl),
 
                 // Progress ring con countdown
                 SizedBox(
@@ -112,6 +130,7 @@ class RestTimerOverlay extends StatelessWidget {
               ],
             ),
           ),
+        ),
         );
       },
     );

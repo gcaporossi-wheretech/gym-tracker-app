@@ -28,6 +28,7 @@ mixin _$SetLog {
   double get rpe => throw _privateConstructorUsedError;
   String get notes => throw _privateConstructorUsedError;
   bool get completed => throw _privateConstructorUsedError;
+  int get durationSeconds => throw _privateConstructorUsedError;
 
   /// Serializes this SetLog to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,6 +52,7 @@ abstract class $SetLogCopyWith<$Res> {
     double rpe,
     String notes,
     bool completed,
+    int durationSeconds,
   });
 }
 
@@ -76,6 +78,7 @@ class _$SetLogCopyWithImpl<$Res, $Val extends SetLog>
     Object? rpe = null,
     Object? notes = null,
     Object? completed = null,
+    Object? durationSeconds = null,
   }) {
     return _then(
       _value.copyWith(
@@ -107,6 +110,10 @@ class _$SetLogCopyWithImpl<$Res, $Val extends SetLog>
                 ? _value.completed
                 : completed // ignore: cast_nullable_to_non_nullable
                       as bool,
+            durationSeconds: null == durationSeconds
+                ? _value.durationSeconds
+                : durationSeconds // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -129,6 +136,7 @@ abstract class _$$SetLogImplCopyWith<$Res> implements $SetLogCopyWith<$Res> {
     double rpe,
     String notes,
     bool completed,
+    int durationSeconds,
   });
 }
 
@@ -153,6 +161,7 @@ class __$$SetLogImplCopyWithImpl<$Res>
     Object? rpe = null,
     Object? notes = null,
     Object? completed = null,
+    Object? durationSeconds = null,
   }) {
     return _then(
       _$SetLogImpl(
@@ -184,6 +193,10 @@ class __$$SetLogImplCopyWithImpl<$Res>
             ? _value.completed
             : completed // ignore: cast_nullable_to_non_nullable
                   as bool,
+        durationSeconds: null == durationSeconds
+            ? _value.durationSeconds
+            : durationSeconds // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -200,6 +213,7 @@ class _$SetLogImpl implements _SetLog {
     this.rpe = 0,
     this.notes = '',
     this.completed = false,
+    this.durationSeconds = 0,
   });
 
   factory _$SetLogImpl.fromJson(Map<String, dynamic> json) =>
@@ -224,10 +238,13 @@ class _$SetLogImpl implements _SetLog {
   @override
   @JsonKey()
   final bool completed;
+  @override
+  @JsonKey()
+  final int durationSeconds;
 
   @override
   String toString() {
-    return 'SetLog(setNumber: $setNumber, plannedReps: $plannedReps, actualReps: $actualReps, weight: $weight, rpe: $rpe, notes: $notes, completed: $completed)';
+    return 'SetLog(setNumber: $setNumber, plannedReps: $plannedReps, actualReps: $actualReps, weight: $weight, rpe: $rpe, notes: $notes, completed: $completed, durationSeconds: $durationSeconds)';
   }
 
   @override
@@ -245,7 +262,9 @@ class _$SetLogImpl implements _SetLog {
             (identical(other.rpe, rpe) || other.rpe == rpe) &&
             (identical(other.notes, notes) || other.notes == notes) &&
             (identical(other.completed, completed) ||
-                other.completed == completed));
+                other.completed == completed) &&
+            (identical(other.durationSeconds, durationSeconds) ||
+                other.durationSeconds == durationSeconds));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -259,6 +278,7 @@ class _$SetLogImpl implements _SetLog {
     rpe,
     notes,
     completed,
+    durationSeconds,
   );
 
   /// Create a copy of SetLog
@@ -284,6 +304,7 @@ abstract class _SetLog implements SetLog {
     final double rpe,
     final String notes,
     final bool completed,
+    final int durationSeconds,
   }) = _$SetLogImpl;
 
   factory _SetLog.fromJson(Map<String, dynamic> json) = _$SetLogImpl.fromJson;
@@ -302,6 +323,8 @@ abstract class _SetLog implements SetLog {
   String get notes;
   @override
   bool get completed;
+  @override
+  int get durationSeconds;
 
   /// Create a copy of SetLog
   /// with the given fields replaced by the non-null parameter values.
