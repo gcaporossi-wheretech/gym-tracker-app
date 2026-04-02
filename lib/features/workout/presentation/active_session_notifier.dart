@@ -165,6 +165,47 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = s.copyWith(currentExerciseIndex: index);
   }
 
+  /// Sposta un esercizio da una posizione a un'altra (GYM-27)
+  void moveExercise(int fromIndex, int toIndex) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    final item = exercises.removeAt(fromIndex);
+    exercises.insert(toIndex, item);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+      currentExerciseIndex: toIndex,
+    );
+    _save();
+  }
+
+  /// Aggiunge un esercizio personalizzato alla sessione (GYM-26)
+  void addCustomExercise({
+    required String name,
+    required int sets,
+    required int reps,
+    String muscleGroup = 'other',
+    String exerciseType = 'weighted',
+  }) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    exercises.add(ExerciseLog(
+      exercisePlanId: 'custom-${DateTime.now().millisecondsSinceEpoch}',
+      exerciseName: name,
+      muscleGroup: muscleGroup,
+      sets: List.generate(sets, (i) => SetLog(setNumber: i + 1, plannedReps: reps)),
+    ));
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+    );
+    _save();
+  }
+
   /// Completa la sessione
   void completeSession() {
     final s = state;
