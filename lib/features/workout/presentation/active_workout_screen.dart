@@ -6,7 +6,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../models/models.dart';
 import '../../../services/rest_timer_service.dart';
-import '../../../services/timer_notification_web.dart';
+import '../../../services/timer_notification.dart'
+    if (dart.library.js_interop) '../../../services/timer_notification_web.dart';
 import 'active_session_notifier.dart';
 import 'rest_timer_overlay.dart';
 import '../../../services/session_providers.dart';

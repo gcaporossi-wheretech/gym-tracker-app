@@ -1,16 +1,17 @@
 import 'dart:js_interop';
-
-import 'package:web/web.dart' as web;
+import 'dart:js_interop_unsafe';
 
 /// Web implementation: play beep sound and vibrate when timer finishes.
-/// Requires a prior user tap to unlock AudioContext on mobile browsers.
+/// Uses dart:js_interop directly (no package:web dependency).
 class TimerNotification {
-  static web.AudioContext? _audioCtx;
+  static JSObject? _audioCtx;
 
   /// Must be called once from a user gesture (tap) to unlock audio on iOS.
   static void unlockAudio() {
-    _audioCtx ??= web.AudioContext();
-    _audioCtx!.resume();
+    try {
+      _audioCtx ??= _newAudioContext();
+      _audioCtx!.callMethod('resume'.toJS);
+    } catch (_) {}
   }
 
   /// Play a short beep sequence and vibrate.
@@ -19,22 +20,28 @@ class TimerNotification {
     _vibrate();
   }
 
+  static JSObject _newAudioContext() {
+    return globalContext.callMethod('eval'.toJS,
+      'new (window.AudioContext || window.webkitAudioContext)()'.toJS) as JSObject;
+  }
+
   static void _playBeep() {
     try {
-      final ctx = _audioCtx ?? web.AudioContext();
+      final ctx = _audioCtx ?? _newAudioContext();
       _audioCtx = ctx;
 
-      final now = ctx.currentTime;
-      // Three short beeps at 880Hz
+      final now = (ctx.getProperty('currentTime'.toJS) as JSNumber).toDartDouble;
       for (var i = 0; i < 3; i++) {
-        final osc = ctx.createOscillator();
-        final gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 880;
-        gain.gain.value = 0.4;
-        osc.start(now + i * 0.25);
-        osc.stop(now + i * 0.25 + 0.15);
+        final osc = ctx.callMethod('createOscillator'.toJS) as JSObject;
+        final gain = ctx.callMethod('createGain'.toJS) as JSObject;
+        osc.callMethod('connect'.toJS, gain);
+        gain.callMethod('connect'.toJS, ctx.getProperty('destination'.toJS));
+        final freq = osc.getProperty('frequency'.toJS) as JSObject;
+        freq.setProperty('value'.toJS, (880.0).toJS);
+        final gainParam = gain.getProperty('gain'.toJS) as JSObject;
+        gainParam.setProperty('value'.toJS, (0.4).toJS);
+        osc.callMethod('start'.toJS, (now + i * 0.25).toJS);
+        osc.callMethod('stop'.toJS, (now + i * 0.25 + 0.15).toJS);
       }
     } catch (_) {
       // Audio not available - fail silently
@@ -43,7 +50,8 @@ class TimerNotification {
 
   static void _vibrate() {
     try {
-      web.window.navigator.vibrate(200.toJS);
+      final nav = globalContext.getProperty('navigator'.toJS) as JSObject;
+      nav.callMethod('vibrate'.toJS, (200).toJS);
     } catch (_) {
       // Vibration not supported - fail silently
     }

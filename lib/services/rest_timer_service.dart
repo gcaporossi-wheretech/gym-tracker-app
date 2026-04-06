@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import 'timer_notification_web.dart';
+import 'timer_notification.dart'
+    if (dart.library.js_interop) 'timer_notification_web.dart';
 
 /// Service per il timer di recupero tra le serie.
 /// Usa timestamp assoluto cosi il timer prosegue anche fuori dall'app (GYM-22).
