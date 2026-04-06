@@ -30,10 +30,11 @@ void main() {
 
     test('formattedTime shows MM:SS format', () {
       timer.start(90);
-      expect(timer.formattedTime, '01:30');
+      // Allow 1 second tolerance due to timestamp-based calculation
+      expect(timer.formattedTime, anyOf('01:30', '01:29'));
 
       timer.start(5);
-      expect(timer.formattedTime, '00:05');
+      expect(timer.formattedTime, anyOf('00:05', '00:04'));
     });
 
     test('skip stops the timer', () {
