@@ -31,7 +31,7 @@ jobs:
         run: flutter test
 
       - name: Build web
-        run: flutter build web --release --web-renderer canvaskit --base-href "/gym-tracker-app/"
+        run: flutter build web --release --base-href "/gym-tracker-app/"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
