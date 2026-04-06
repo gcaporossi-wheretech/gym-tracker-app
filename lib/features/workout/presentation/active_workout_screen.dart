@@ -275,6 +275,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                         onUnskip: () {
                           ref.read(activeSessionProvider.notifier).unskipExercise(index);
                         },
+                        onRemoveExercise: () {
+                          ref.read(activeSessionProvider.notifier).removeExercise(index);
+                        },
                         onTap: () {
                           ref.read(activeSessionProvider.notifier).goToExercise(index);
                         },
@@ -769,6 +772,7 @@ class _ExerciseSetTracker extends StatelessWidget {
     required this.onApplyRepsToAll,
     required this.onSkip,
     required this.onUnskip,
+    required this.onRemoveExercise,
     required this.onTap,
   });
 
@@ -784,6 +788,7 @@ class _ExerciseSetTracker extends StatelessWidget {
   final void Function(int reps) onApplyRepsToAll;
   final VoidCallback onSkip;
   final VoidCallback onUnskip;
+  final VoidCallback onRemoveExercise;
   final VoidCallback onTap;
 
   @override
@@ -830,26 +835,28 @@ class _ExerciseSetTracker extends StatelessWidget {
                   ),
                 ),
               ),
-              if (exercise.skipped)
-                TextButton(
-                  onPressed: onUnskip,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.success,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    minimumSize: const Size(48, 36),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: AppColors.textSecondary, size: 20),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'skip': onSkip();
+                    case 'unskip': onUnskip();
+                    case 'remove': onRemoveExercise();
+                  }
+                },
+                itemBuilder: (ctx) => [
+                  if (exercise.skipped)
+                    const PopupMenuItem(value: 'unskip', child: Text('Riattiva'))
+                  else if (!allCompleted)
+                    const PopupMenuItem(value: 'skip', child: Text('Salta')),
+                  const PopupMenuItem(
+                    value: 'remove',
+                    child: Text('Rimuovi', style: TextStyle(color: AppColors.error)),
                   ),
-                  child: const Text('Riattiva', style: TextStyle(fontSize: 13)),
-                )
-              else if (!allCompleted)
-                TextButton(
-                  onPressed: onSkip,
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    minimumSize: const Size(48, 36),
-                  ),
-                  child: const Text('Skip', style: TextStyle(fontSize: 13)),
-                ),
+                ],
+              ),
             ],
           ),
 

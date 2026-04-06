@@ -240,6 +240,30 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     _save();
   }
 
+  /// Rimuove un esercizio dalla sessione
+  void removeExercise(int exerciseIndex) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return;
+    if (exercises.length <= 1) return; // almeno 1 esercizio
+
+    exercises.removeAt(exerciseIndex);
+
+    // Adjust currentExerciseIndex if needed
+    var currentIdx = s.currentExerciseIndex;
+    if (currentIdx >= exercises.length) {
+      currentIdx = exercises.length - 1;
+    }
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+      currentExerciseIndex: currentIdx,
+    );
+    _save();
+  }
+
   /// Completa la sessione
   void completeSession() {
     final s = state;
