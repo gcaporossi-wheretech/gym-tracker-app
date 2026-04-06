@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../models/models.dart';
 import '../../../services/rest_timer_service.dart';
+import '../../../services/timer_notification_web.dart';
 import 'active_session_notifier.dart';
 import 'rest_timer_overlay.dart';
 import '../../../services/session_providers.dart';
@@ -30,13 +31,23 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   @override
   void initState() {
     super.initState();
-    _workoutStartTime = DateTime.now();
+    // Unlock audio on first user gesture context (GYM-30)
+    TimerNotification.unlockAudio();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final session = ref.read(activeSessionProvider);
       if (session == null) {
         ref.read(activeSessionProvider.notifier).startSession(widget.dayPlan);
       }
+      // Use original session start time for resumed workouts (GYM-33)
+      final s = ref.read(activeSessionProvider);
+      if (s != null) {
+        _workoutStartTime = s.session.date;
+      } else {
+        _workoutStartTime = DateTime.now();
+      }
+      if (mounted) setState(() {});
     });
+    _workoutStartTime = DateTime.now();
   }
 
   @override
@@ -251,6 +262,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                             weight: weight,
                           );
                         },
+                        onApplyRepsToAll: (reps) {
+                          ref.read(activeSessionProvider.notifier).applyRepsToAll(
+                            exerciseIndex: index,
+                            reps: reps,
+                          );
+                        },
                         onSkip: () {
                           ref.read(activeSessionProvider.notifier).skipExercise(index);
                         },
@@ -297,19 +314,22 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             ),
           ),
 
-          // Bottom action
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: GlowButton(
-                label: 'Completa Workout',
-                icon: Icons.check_circle,
-                color: AppColors.success,
-                onPressed: () {
-                  ref.read(activeSessionProvider.notifier).completeSession();
-                },
-              ),
-            ),
+          // Bottom action - hidden when keyboard is open (GYM-28)
+          Builder(
+            builder: (context) {
+              final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 50;
+              if (keyboardOpen) return const SizedBox.shrink();
+              return SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: _HoldToCompleteButton(
+                    onConfirmed: () {
+                      ref.read(activeSessionProvider.notifier).completeSession();
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -412,32 +432,27 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 }
 
-/// Warmup checklist (GYM-20)
-class _WarmupChecklist extends StatefulWidget {
+/// Warmup checklist - persisted in session state (GYM-20, GYM-29)
+class _WarmupChecklist extends ConsumerStatefulWidget {
   const _WarmupChecklist({required this.warmup});
   final List<String> warmup;
 
   @override
-  State<_WarmupChecklist> createState() => _WarmupChecklistState();
+  ConsumerState<_WarmupChecklist> createState() => _WarmupChecklistState();
 }
 
-class _WarmupChecklistState extends State<_WarmupChecklist> {
-  late List<bool> _checked;
+class _WarmupChecklistState extends ConsumerState<_WarmupChecklist> {
   bool _expanded = true;
 
   @override
-  void initState() {
-    super.initState();
-    _checked = List.filled(widget.warmup.length, false);
-  }
-
-  bool get _allDone => _checked.every((c) => c);
-  int get _doneCount => _checked.where((c) => c).length;
-
-  @override
   Widget build(BuildContext context) {
+    final session = ref.watch(activeSessionProvider);
+    final checked = session?.warmupChecked ?? [];
+    final allDone = session?.warmupAllDone ?? false;
+    final doneCount = session?.warmupDoneCount ?? 0;
+
     return GlassmorphismCard(
-      borderColor: _allDone
+      borderColor: allDone
           ? AppColors.success.withValues(alpha: 0.3)
           : AppColors.warning.withValues(alpha: 0.3),
       child: Column(
@@ -448,14 +463,14 @@ class _WarmupChecklistState extends State<_WarmupChecklist> {
             child: Row(
               children: [
                 Icon(
-                  _allDone ? Icons.check_circle : Icons.whatshot,
-                  color: _allDone ? AppColors.success : AppColors.warning,
+                  allDone ? Icons.check_circle : Icons.whatshot,
+                  color: allDone ? AppColors.success : AppColors.warning,
                   size: 20,
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _allDone ? 'Riscaldamento completato!' : 'Riscaldamento ($_doneCount/${widget.warmup.length})',
+                    allDone ? 'Riscaldamento completato!' : 'Riscaldamento ($doneCount/${widget.warmup.length})',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -468,15 +483,16 @@ class _WarmupChecklistState extends State<_WarmupChecklist> {
             ...widget.warmup.asMap().entries.map((entry) {
               final idx = entry.key;
               final step = entry.value;
+              final isChecked = idx < checked.length && checked[idx];
               return GestureDetector(
-                onTap: () => setState(() => _checked[idx] = !_checked[idx]),
+                onTap: () => ref.read(activeSessionProvider.notifier).toggleWarmup(idx),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
                       Icon(
-                        _checked[idx] ? Icons.check_box : Icons.check_box_outline_blank,
-                        color: _checked[idx] ? AppColors.success : AppColors.textSecondary,
+                        isChecked ? Icons.check_box : Icons.check_box_outline_blank,
+                        color: isChecked ? AppColors.success : AppColors.textSecondary,
                         size: 22,
                       ),
                       const SizedBox(width: AppSpacing.sm),
@@ -485,8 +501,8 @@ class _WarmupChecklistState extends State<_WarmupChecklist> {
                           step,
                           style: TextStyle(
                             fontSize: 14,
-                            color: _checked[idx] ? AppColors.textSecondary : AppColors.textPrimary,
-                            decoration: _checked[idx] ? TextDecoration.lineThrough : null,
+                            color: isChecked ? AppColors.textSecondary : AppColors.textPrimary,
+                            decoration: isChecked ? TextDecoration.lineThrough : null,
                           ),
                         ),
                       ),
@@ -514,6 +530,7 @@ class _ExerciseSetTracker extends StatelessWidget {
     required this.onRemoveSet,
     required this.onAddSet,
     required this.onApplyWeightToAll,
+    required this.onApplyRepsToAll,
     required this.onSkip,
     required this.onUnskip,
     required this.onTap,
@@ -528,6 +545,7 @@ class _ExerciseSetTracker extends StatelessWidget {
   final void Function(int setIndex) onRemoveSet;
   final VoidCallback onAddSet;
   final void Function(double weight) onApplyWeightToAll;
+  final void Function(int reps) onApplyRepsToAll;
   final VoidCallback onSkip;
   final VoidCallback onUnskip;
   final VoidCallback onTap;
@@ -616,6 +634,8 @@ class _ExerciseSetTracker extends StatelessWidget {
               onSetCompleted: onSetCompleted,
               onUndoSet: onUndoSet,
               onRemoveSet: onRemoveSet,
+              onApplyWeightToAll: onApplyWeightToAll,
+              onApplyRepsToAll: onApplyRepsToAll,
               exerciseType: plan.exerciseType,
             ),
             // Action buttons row
@@ -687,6 +707,8 @@ class _SetTable extends StatelessWidget {
     required this.onSetCompleted,
     required this.onUndoSet,
     required this.onRemoveSet,
+    required this.onApplyWeightToAll,
+    required this.onApplyRepsToAll,
     this.exerciseType = 'weighted',
   });
 
@@ -695,6 +717,8 @@ class _SetTable extends StatelessWidget {
   final void Function(int setIndex, double weight, int reps) onSetCompleted;
   final void Function(int setIndex) onUndoSet;
   final void Function(int setIndex) onRemoveSet;
+  final void Function(double weight) onApplyWeightToAll;
+  final void Function(int reps) onApplyRepsToAll;
   final String exerciseType;
 
   @override
@@ -731,6 +755,8 @@ class _SetTable extends StatelessWidget {
             onCompleted: (weight, reps) => onSetCompleted(index, weight, reps),
             onUndo: () => onUndoSet(index),
             onRemove: () => onRemoveSet(index),
+            onApplyWeightToAll: onApplyWeightToAll,
+            onApplyRepsToAll: onApplyRepsToAll,
           );
         }),
       ],
@@ -747,6 +773,8 @@ class _SetRow extends StatefulWidget {
     required this.onCompleted,
     required this.onUndo,
     required this.onRemove,
+    required this.onApplyWeightToAll,
+    required this.onApplyRepsToAll,
     this.canRemove = true,
     this.exerciseType = 'weighted',
   });
@@ -757,6 +785,8 @@ class _SetRow extends StatefulWidget {
   final void Function(double weight, int reps) onCompleted;
   final VoidCallback onUndo;
   final VoidCallback onRemove;
+  final void Function(double weight) onApplyWeightToAll;
+  final void Function(int reps) onApplyRepsToAll;
   final bool canRemove;
   final String exerciseType;
 
@@ -790,6 +820,34 @@ class _SetRowState extends State<_SetRow> {
     _weightController.dispose();
     _repsController.dispose();
     super.dispose();
+  }
+
+  void _fillDownWeight() {
+    final weight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0;
+    if (weight > 0) {
+      widget.onApplyWeightToAll(weight);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${weight.toStringAsFixed(1)} kg applicato a tutte le serie'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: AppColors.bgElevated,
+        ),
+      );
+    }
+  }
+
+  void _fillDownReps() {
+    final reps = int.tryParse(_repsController.text) ?? 0;
+    if (reps > 0) {
+      widget.onApplyRepsToAll(reps);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$reps rep applicate a tutte le serie'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: AppColors.bgElevated,
+        ),
+      );
+    }
   }
 
   @override
@@ -855,6 +913,17 @@ class _SetRowState extends State<_SetRow> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
                   ),
+                  // Fill-down icon (GYM-32)
+                  suffixIcon: !isCompleted
+                      ? GestureDetector(
+                          onTap: _fillDownWeight,
+                          child: const Padding(
+                            padding: EdgeInsets.only(right: 2),
+                            child: Icon(Icons.south, size: 14, color: AppColors.warning),
+                          ),
+                        )
+                      : null,
+                  suffixIconConstraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 ),
               ),
             ),
@@ -889,6 +958,17 @@ class _SetRowState extends State<_SetRow> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
                   ),
+                  // Fill-down icon (GYM-32)
+                  suffixIcon: !isCompleted
+                      ? GestureDetector(
+                          onTap: _fillDownReps,
+                          child: const Padding(
+                            padding: EdgeInsets.only(right: 2),
+                            child: Icon(Icons.south, size: 14, color: AppColors.warning),
+                          ),
+                        )
+                      : null,
+                  suffixIconConstraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 ),
               ),
             ),
@@ -924,6 +1004,140 @@ class _SetRowState extends State<_SetRow> {
       final reps = int.tryParse(_repsController.text) ?? 0;
       if (weight > 0 && reps > 0) widget.onCompleted(weight, reps);
     }
+  }
+}
+
+/// Bottone hold-to-complete: tieni premuto 2s poi conferma (GYM-28)
+class _HoldToCompleteButton extends StatefulWidget {
+  const _HoldToCompleteButton({required this.onConfirmed});
+  final VoidCallback onConfirmed;
+
+  @override
+  State<_HoldToCompleteButton> createState() => _HoldToCompleteButtonState();
+}
+
+class _HoldToCompleteButtonState extends State<_HoldToCompleteButton>
+    with SingleTickerProviderStateMixin {
+  static const _holdDuration = Duration(milliseconds: 2000);
+  late AnimationController _controller;
+  bool _holding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: _holdDuration);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _holding = false;
+        _controller.reset();
+        _showConfirmation();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onPointerDown() {
+    setState(() => _holding = true);
+    _controller.forward();
+  }
+
+  void _onPointerUp() {
+    if (_controller.isAnimating) {
+      _controller.reset();
+      setState(() => _holding = false);
+    }
+  }
+
+  void _showConfirmation() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        title: const Text('Completare il workout?'),
+        content: const Text('La sessione verra salvata nello storico.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              widget.onConfirmed();
+            },
+            child: const Text('Completa', style: TextStyle(color: AppColors.success)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPressStart: (_) => _onPointerDown(),
+      onLongPressEnd: (_) => _onPointerUp(),
+      onLongPressCancel: _onPointerUp,
+      child: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, child) {
+          return Container(
+            width: double.infinity,
+            height: 56,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              border: Border.all(
+                color: _holding
+                    ? AppColors.success.withValues(alpha: 0.8)
+                    : AppColors.success.withValues(alpha: 0.4),
+                width: 2,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd - 2),
+              child: Stack(
+                children: [
+                  // Progress fill
+                  FractionallySizedBox(
+                    widthFactor: _controller.value,
+                    child: Container(
+                      color: AppColors.success.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  // Label
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: _holding ? AppColors.success : AppColors.textSecondary,
+                          size: 22,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          _holding ? 'Tieni premuto...' : 'Tieni premuto per completare',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: _holding ? AppColors.success : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 

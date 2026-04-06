@@ -13,11 +13,13 @@ class ActiveSessionState {
     required this.session,
     this.currentExerciseIndex = 0,
     this.isCompleted = false,
+    this.warmupChecked = const [],
   });
 
   final WorkoutSession session;
   final int currentExerciseIndex;
   final bool isCompleted;
+  final List<bool> warmupChecked;
 
   ExerciseLog? get currentExercise {
     if (currentExerciseIndex >= session.exercises.length) return null;
@@ -29,15 +31,21 @@ class ActiveSessionState {
       .where((e) => e.skipped || e.sets.every((s) => s.completed))
       .length;
 
+  bool get warmupAllDone =>
+      warmupChecked.isNotEmpty && warmupChecked.every((c) => c);
+  int get warmupDoneCount => warmupChecked.where((c) => c).length;
+
   ActiveSessionState copyWith({
     WorkoutSession? session,
     int? currentExerciseIndex,
     bool? isCompleted,
+    List<bool>? warmupChecked,
   }) {
     return ActiveSessionState(
       session: session ?? this.session,
       currentExerciseIndex: currentExerciseIndex ?? this.currentExerciseIndex,
       isCompleted: isCompleted ?? this.isCompleted,
+      warmupChecked: warmupChecked ?? this.warmupChecked,
     );
   }
 }
@@ -98,7 +106,20 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       exercises: exercises,
     );
 
-    state = ActiveSessionState(session: session);
+    state = ActiveSessionState(
+      session: session,
+      warmupChecked: List.filled(dayPlan.warmup.length, false),
+    );
+    _save();
+  }
+
+  /// Riprendi una sessione esistente dallo storico (GYM-33)
+  void resumeSession(WorkoutSession session, {int warmupCount = 0}) {
+    final reopened = session.copyWith(completed: false);
+    state = ActiveSessionState(
+      session: reopened,
+      warmupChecked: List.filled(warmupCount, true), // assume warmup was done
+    );
     _save();
   }
 
@@ -163,6 +184,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     if (s == null) return;
     if (index < 0 || index >= s.session.exercises.length) return;
     state = s.copyWith(currentExerciseIndex: index);
+  }
+
+  /// Toggle un item del riscaldamento (GYM-29)
+  void toggleWarmup(int index) {
+    final s = state;
+    if (s == null) return;
+    if (index < 0 || index >= s.warmupChecked.length) return;
+
+    final updated = List<bool>.from(s.warmupChecked);
+    updated[index] = !updated[index];
+    state = s.copyWith(warmupChecked: updated);
   }
 
   /// Sposta un esercizio da una posizione a un'altra (GYM-27)
@@ -294,6 +326,28 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     for (var i = 0; i < sets.length; i++) {
       if (!sets[i].completed) {
         sets[i] = sets[i].copyWith(weight: weight);
+      }
+    }
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
+    );
+    _save();
+  }
+
+  /// Applica reps a tutte le serie non completate di un esercizio
+  void applyRepsToAll({required int exerciseIndex, required int reps}) {
+    final s = state;
+    if (s == null) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    final exercise = exercises[exerciseIndex];
+    final sets = List<SetLog>.from(exercise.sets);
+
+    for (var i = 0; i < sets.length; i++) {
+      if (!sets[i].completed) {
+        sets[i] = sets[i].copyWith(plannedReps: reps);
       }
     }
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);

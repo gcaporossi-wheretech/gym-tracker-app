@@ -33,12 +33,12 @@ class RestTimerOverlay extends StatelessWidget {
     return ListenableBuilder(
       listenable: timer,
       builder: (context, _) {
-        if (!timer.isRunning && timer.remainingSeconds == 0) {
+        // Show nothing only if timer was never started or was skipped/stopped
+        if (!timer.isRunning && timer.totalSeconds == 0) {
           return const SizedBox.shrink();
         }
 
         final isFinished = !timer.isRunning && timer.remainingSeconds == 0;
-        if (isFinished) return const SizedBox.shrink();
 
         return GestureDetector(
           onTap: onDismiss,
@@ -49,10 +49,11 @@ class RestTimerOverlay extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'RECUPERO',
+                    isFinished ? 'TEMPO!' : 'RECUPERO',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: isFinished ? AppColors.success : AppColors.textSecondary,
                       letterSpacing: 2,
+                      fontWeight: isFinished ? FontWeight.w900 : null,
                     ),
                   ),
                   if (exerciseName != null && currentSet != null) ...[
@@ -78,11 +79,13 @@ class RestTimerOverlay extends StatelessWidget {
                         height: 200,
                         child: CustomPaint(
                           painter: _TimerRingPainter(
-                            progress: timer.progress,
+                            progress: isFinished ? 1.0 : timer.progress,
                             backgroundColor: AppColors.bgElevated,
-                            progressColor: timer.remainingSeconds <= 5
-                                ? AppColors.warning
-                                : AppColors.primary,
+                            progressColor: isFinished
+                                ? AppColors.success
+                                : timer.remainingSeconds <= 5
+                                    ? AppColors.warning
+                                    : AppColors.primary,
                           ),
                         ),
                       ),
@@ -91,15 +94,25 @@ class RestTimerOverlay extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            timer.formattedTime,
+                            isFinished ? '00:00' : timer.formattedTime,
                             style: TextStyle(
                               fontSize: 48,
                               fontWeight: FontWeight.w900,
-                              color: timer.remainingSeconds <= 5
-                                  ? AppColors.warning
-                                  : AppColors.textPrimary,
+                              color: isFinished
+                                  ? AppColors.success
+                                  : timer.remainingSeconds <= 5
+                                      ? AppColors.warning
+                                      : AppColors.textPrimary,
                             ),
                           ),
+                          if (isFinished)
+                            const Text(
+                              'Tocca per continuare',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
                         ],
                       ),
                     ],
@@ -108,7 +121,8 @@ class RestTimerOverlay extends StatelessWidget {
 
                 const SizedBox(height: AppSpacing.xl),
 
-                // Action buttons
+                // Action buttons (hidden when finished)
+                if (!isFinished)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

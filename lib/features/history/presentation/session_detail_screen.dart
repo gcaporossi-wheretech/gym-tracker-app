@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../models/models.dart';
+import '../../../services/providers.dart';
+import '../../workout/presentation/active_session_notifier.dart';
+import '../../workout/presentation/active_workout_screen.dart';
 
-class SessionDetailScreen extends StatelessWidget {
+class SessionDetailScreen extends ConsumerWidget {
   const SessionDetailScreen({super.key, required this.session});
   final WorkoutSession session;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final d = session.date;
     final dayNames = ['', 'Lunedi', 'Martedi', 'Mercoledi', 'Giovedi', 'Venerdi', 'Sabato', 'Domenica'];
     final monthNames = ['', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
@@ -19,6 +23,13 @@ class SessionDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       appBar: AppBar(title: Text(session.workoutName)),
+      // Resume/Edit FAB (GYM-33)
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _resumeSession(context, ref),
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.play_arrow),
+        label: const Text('Riprendi'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
@@ -169,8 +180,50 @@ class SessionDetailScreen extends StatelessWidget {
               ),
             ),
           ],
+          // Space for FAB
+          const SizedBox(height: 80),
         ],
       ),
+    );
+  }
+
+  /// Resume session: find original DayPlan and navigate to active workout (GYM-33)
+  void _resumeSession(BuildContext context, WidgetRef ref) {
+    final planAsync = ref.read(activePlanProvider);
+    final plan = planAsync.whenOrNull(data: (p) => p);
+
+    // Find original DayPlan by ID
+    DayPlan? dayPlan;
+    if (plan != null) {
+      final matches = plan.days.where((d) => d.id == session.dayPlanId);
+      if (matches.isNotEmpty) dayPlan = matches.first;
+    }
+
+    // Fallback: create synthetic DayPlan from session data
+    dayPlan ??= DayPlan(
+      id: session.dayPlanId,
+      dayOfWeek: session.date.weekday,
+      name: session.workoutName,
+      exercises: session.exercises.map((e) => ExercisePlan(
+        id: e.exercisePlanId,
+        name: e.exerciseName,
+        equipment: '',
+        muscleGroup: e.muscleGroup,
+        sets: e.sets.length,
+        reps: e.sets.isNotEmpty ? e.sets.first.plannedReps : 8,
+      )).toList(),
+    );
+
+    // Set up session in notifier
+    ref.read(activeSessionProvider.notifier).resumeSession(
+      session,
+      warmupCount: dayPlan.warmup.length,
+    );
+
+    // Navigate to active workout
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => ActiveWorkoutScreen(dayPlan: dayPlan!)),
     );
   }
 }

@@ -2,13 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'timer_notification_web.dart';
+
 /// Service per il timer di recupero tra le serie.
 /// Usa timestamp assoluto cosi il timer prosegue anche fuori dall'app (GYM-22).
 class RestTimerService extends ChangeNotifier {
+  RestTimerService({this.onComplete});
+
   Timer? _timer;
   DateTime? _endTime;
   int _totalSeconds = 0;
   bool _isRunning = false;
+
+  /// Called once when the timer reaches zero.
+  VoidCallback? onComplete;
 
   int get remainingSeconds {
     if (_endTime == null) return 0;
@@ -44,6 +51,8 @@ class RestTimerService extends ChangeNotifier {
         _isRunning = false;
         _timer?.cancel();
         _timer = null;
+        TimerNotification.notify();
+        onComplete?.call();
       }
       notifyListeners();
     });
@@ -62,6 +71,8 @@ class RestTimerService extends ChangeNotifier {
           _isRunning = false;
           _timer?.cancel();
           _timer = null;
+          TimerNotification.notify();
+          onComplete?.call();
         }
         notifyListeners();
       });
