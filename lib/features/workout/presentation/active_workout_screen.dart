@@ -374,59 +374,228 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     );
   }
 
-  /// Dialog per aggiungere esercizio (GYM-26)
+  /// Dialog per aggiungere esercizio con selezione tipo (GYM-26, GYM-34)
   void _showAddExerciseDialog(BuildContext context, WidgetRef ref) {
-    final nameController = TextEditingController();
-    final setsController = TextEditingController(text: '3');
-    final repsController = TextEditingController(text: '12');
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSecondary,
-        title: const Text('Aggiungi esercizio'),
-        content: Column(
+      builder: (ctx) => _AddExerciseDialog(
+        onAdd: ({
+          required String name,
+          required int sets,
+          required int reps,
+          required String exerciseType,
+          String notes = '',
+          String muscleGroup = 'other',
+        }) {
+          ref.read(activeSessionProvider.notifier).addCustomExercise(
+            name: name,
+            sets: sets,
+            reps: reps,
+            exerciseType: exerciseType,
+            notes: notes,
+            muscleGroup: muscleGroup,
+          );
+          Navigator.pop(ctx);
+        },
+      ),
+    );
+  }
+}
+
+/// Dialog per aggiungere esercizio con tipo selezionabile (GYM-34)
+class _AddExerciseDialog extends StatefulWidget {
+  const _AddExerciseDialog({required this.onAdd});
+  final void Function({
+    required String name,
+    required int sets,
+    required int reps,
+    required String exerciseType,
+    String notes,
+    String muscleGroup,
+  }) onAdd;
+
+  @override
+  State<_AddExerciseDialog> createState() => _AddExerciseDialogState();
+}
+
+class _AddExerciseDialogState extends State<_AddExerciseDialog> {
+  final _nameController = TextEditingController();
+  final _setsController = TextEditingController(text: '3');
+  final _repsController = TextEditingController(text: '12');
+  final _durationController = TextEditingController(text: '30');
+  final _speedController = TextEditingController();
+  final _inclineController = TextEditingController();
+  String _type = 'weighted'; // weighted, bodyweight, cardio
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _setsController.dispose();
+    _repsController.dispose();
+    _durationController.dispose();
+    _speedController.dispose();
+    _inclineController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+
+    if (_type == 'cardio') {
+      final minutes = int.tryParse(_durationController.text) ?? 30;
+      final speed = _speedController.text.trim();
+      final incline = _inclineController.text.trim();
+      // Build notes with cardio details
+      final parts = <String>[];
+      if (speed.isNotEmpty) parts.add('$speed km/h');
+      if (incline.isNotEmpty) parts.add('$incline% pendenza');
+      widget.onAdd(
+        name: name,
+        sets: 1,
+        reps: minutes * 60, // store as seconds for timed type
+        exerciseType: 'timed',
+        notes: parts.join(' • '),
+        muscleGroup: 'cardio',
+      );
+    } else {
+      widget.onAdd(
+        name: name,
+        sets: int.tryParse(_setsController.text) ?? 3,
+        reps: int.tryParse(_repsController.text) ?? 12,
+        exerciseType: _type,
+        muscleGroup: _type == 'bodyweight' ? 'bodyweight' : 'other',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.bgSecondary,
+      title: const Text('Aggiungi esercizio'),
+      content: SingleChildScrollView(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Type selector chips
+            Wrap(
+              spacing: 8,
+              children: [
+                _typeChip('Con pesi', 'weighted', Icons.fitness_center),
+                _typeChip('Corpo libero', 'bodyweight', Icons.accessibility_new),
+                _typeChip('Cardio', 'cardio', Icons.directions_run),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Name field
             TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Nome esercizio'),
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Nome esercizio',
+                hintText: _type == 'cardio'
+                    ? 'es. Tapis roulant'
+                    : _type == 'bodyweight'
+                        ? 'es. Crunch, Flessioni'
+                        : 'es. Curl manubri',
+              ),
               autofocus: true,
             ),
             const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                Expanded(child: TextField(
-                  controller: setsController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Serie'),
-                )),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(child: TextField(
-                  controller: repsController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Rep'),
-                )),
-              ],
-            ),
+
+            // Dynamic fields based on type
+            if (_type == 'cardio') ...[
+              TextField(
+                controller: _durationController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Durata (minuti)',
+                  suffixText: 'min',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _speedController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Velocita',
+                        suffixText: 'km/h',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: TextField(
+                      controller: _inclineController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Pendenza',
+                        suffixText: '%',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _setsController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Serie'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: TextField(
+                      controller: _repsController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Rep'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annulla')),
-          TextButton(
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isEmpty) return;
-              ref.read(activeSessionProvider.notifier).addCustomExercise(
-                name: name,
-                sets: int.tryParse(setsController.text) ?? 3,
-                reps: int.tryParse(repsController.text) ?? 12,
-              );
-              Navigator.pop(ctx);
-            },
-            child: const Text('Aggiungi', style: TextStyle(color: AppColors.success)),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annulla'),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: const Text('Aggiungi', style: TextStyle(color: AppColors.success)),
+        ),
+      ],
+    );
+  }
+
+  Widget _typeChip(String label, String value, IconData icon) {
+    final selected = _type == value;
+    return GestureDetector(
+      onTap: () => setState(() => _type = value),
+      child: Chip(
+        avatar: Icon(icon, size: 16, color: selected ? Colors.white : AppColors.textSecondary),
+        label: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: selected ? Colors.white : AppColors.textSecondary,
           ),
-        ],
+        ),
+        backgroundColor: selected ? AppColors.primary : AppColors.bgElevated,
+        side: BorderSide(
+          color: selected ? AppColors.primary : AppColors.bgElevated,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
       ),
     );
   }

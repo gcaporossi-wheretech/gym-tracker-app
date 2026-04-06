@@ -213,13 +213,14 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     _save();
   }
 
-  /// Aggiunge un esercizio personalizzato alla sessione (GYM-26)
+  /// Aggiunge un esercizio personalizzato alla sessione (GYM-26, GYM-34)
   void addCustomExercise({
     required String name,
     required int sets,
     required int reps,
     String muscleGroup = 'other',
     String exerciseType = 'weighted',
+    String notes = '',
   }) {
     final s = state;
     if (s == null) return;
@@ -229,6 +230,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       exercisePlanId: 'custom-${DateTime.now().millisecondsSinceEpoch}',
       exerciseName: name,
       muscleGroup: muscleGroup,
+      notes: notes,
       sets: List.generate(sets, (i) => SetLog(setNumber: i + 1, plannedReps: reps)),
     ));
 
