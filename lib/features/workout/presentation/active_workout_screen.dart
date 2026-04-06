@@ -302,6 +302,10 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   );
                 }),
 
+                // Cardio section (if defined in plan)
+                if (widget.dayPlan.hasCardio && widget.dayPlan.cardioDescription.isNotEmpty)
+                  _CardioSection(description: widget.dayPlan.cardioDescription),
+
                 // Add exercise button (GYM-26)
                 const SizedBox(height: AppSpacing.sm),
                 Center(
@@ -398,6 +402,68 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           );
           Navigator.pop(ctx);
         },
+      ),
+    );
+  }
+}
+
+/// Sezione cardio a fine workout (mostra cardioDescription dal DayPlan)
+class _CardioSection extends StatefulWidget {
+  const _CardioSection({required this.description});
+  final String description;
+
+  @override
+  State<_CardioSection> createState() => _CardioSectionState();
+}
+
+class _CardioSectionState extends State<_CardioSection> {
+  bool _done = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassmorphismCard(
+      borderColor: _done
+          ? AppColors.success.withValues(alpha: 0.3)
+          : AppColors.primary.withValues(alpha: 0.3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _done = !_done),
+            child: Row(
+              children: [
+                Icon(
+                  _done ? Icons.check_circle : Icons.directions_run,
+                  color: _done ? AppColors.success : AppColors.primary,
+                  size: 22,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    _done ? 'Cardio completato!' : 'Cardio finale',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: _done ? AppColors.success : null,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _done ? Icons.check_box : Icons.check_box_outline_blank,
+                  color: _done ? AppColors.success : AppColors.textSecondary,
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            widget.description,
+            style: TextStyle(
+              fontSize: 14,
+              color: _done ? AppColors.textSecondary : AppColors.textPrimary,
+              decoration: _done ? TextDecoration.lineThrough : null,
+            ),
+          ),
+        ],
       ),
     );
   }
