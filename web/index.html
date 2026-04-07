@@ -35,11 +35,29 @@
 <body>
   <!-- Prevent iOS shake-to-undo dialog (GYM-31) -->
   <script>
+    // Block undo/redo input events
     document.addEventListener('beforeinput', function(e) {
       if (e.inputType === 'historyUndo' || e.inputType === 'historyRedo') {
         e.preventDefault();
       }
     });
+    // Detect shake via accelerometer and blur active input to prevent
+    // iOS "Undo Typing" system dialog when phone is dropped/shaken
+    (function() {
+      var lastShake = 0;
+      window.addEventListener('devicemotion', function(e) {
+        var acc = e.accelerationIncludingGravity;
+        if (!acc) return;
+        var force = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
+        if (force > 35) {
+          var now = Date.now();
+          if (now - lastShake < 1500 && document.activeElement) {
+            document.activeElement.blur();
+          }
+          lastShake = now;
+        }
+      }, { passive: true });
+    })();
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

@@ -48,12 +48,16 @@ class RestTimerService extends ChangeNotifier {
     notifyListeners();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (remainingSeconds <= 0) {
+      final rem = remainingSeconds;
+      if (rem <= 0) {
         _isRunning = false;
         _timer?.cancel();
         _timer = null;
         TimerNotification.notify();
         onComplete?.call();
+      } else if (rem <= 5) {
+        // Countdown beep for last 5 seconds
+        TimerNotification.tick();
       }
       notifyListeners();
     });
@@ -68,12 +72,15 @@ class RestTimerService extends ChangeNotifier {
     if (!_isRunning) {
       _isRunning = true;
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (remainingSeconds <= 0) {
+        final rem = remainingSeconds;
+        if (rem <= 0) {
           _isRunning = false;
           _timer?.cancel();
           _timer = null;
           TimerNotification.notify();
           onComplete?.call();
+        } else if (rem <= 5) {
+          TimerNotification.tick();
         }
         notifyListeners();
       });

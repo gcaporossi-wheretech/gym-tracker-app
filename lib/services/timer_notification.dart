@@ -3,4 +3,5 @@
 class TimerNotification {
   static void unlockAudio() {}
   static void notify() {}
+  static void tick() {}
 }

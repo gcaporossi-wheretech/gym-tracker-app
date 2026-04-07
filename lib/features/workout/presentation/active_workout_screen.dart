@@ -1156,21 +1156,24 @@ class _SetRowState extends State<_SetRow> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
                   ),
-                  // Fill-down icon (GYM-32)
-                  suffixIcon: !isCompleted
-                      ? GestureDetector(
-                          onTap: _fillDownWeight,
-                          child: const Padding(
-                            padding: EdgeInsets.only(right: 2),
-                            child: Icon(Icons.south, size: 14, color: AppColors.warning),
-                          ),
-                        )
-                      : null,
-                  suffixIconConstraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 ),
               ),
             ),
           ),
+
+          // Fill-down weight button (separate from TextField)
+          if (widget.exerciseType == 'weighted' && !isCompleted)
+            SizedBox(
+              width: 28,
+              height: 36,
+              child: IconButton(
+                onPressed: _fillDownWeight,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.south, size: 16, color: AppColors.warning),
+                tooltip: 'Applica kg a tutte',
+              ),
+            ),
 
           // Reps input
           Expanded(
@@ -1201,21 +1204,24 @@ class _SetRowState extends State<_SetRow> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
                   ),
-                  // Fill-down icon (GYM-32)
-                  suffixIcon: !isCompleted
-                      ? GestureDetector(
-                          onTap: _fillDownReps,
-                          child: const Padding(
-                            padding: EdgeInsets.only(right: 2),
-                            child: Icon(Icons.south, size: 14, color: AppColors.warning),
-                          ),
-                        )
-                      : null,
-                  suffixIconConstraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 ),
               ),
             ),
           ),
+
+          // Fill-down reps button
+          if (!isCompleted)
+            SizedBox(
+              width: 28,
+              height: 36,
+              child: IconButton(
+                onPressed: _fillDownReps,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.south, size: 16, color: AppColors.warning),
+                tooltip: 'Applica rep a tutte',
+              ),
+            ),
 
           // Check button (tap to complete, tap again to undo)
           SizedBox(

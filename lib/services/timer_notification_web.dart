@@ -48,6 +48,26 @@ class TimerNotification {
     }
   }
 
+  /// Short tick beep for countdown (last 5 seconds).
+  static void tick() {
+    try {
+      final ctx = _audioCtx ?? _newAudioContext();
+      _audioCtx = ctx;
+
+      final now = (ctx.getProperty('currentTime'.toJS) as JSNumber).toDartDouble;
+      final osc = ctx.callMethod('createOscillator'.toJS) as JSObject;
+      final gain = ctx.callMethod('createGain'.toJS) as JSObject;
+      osc.callMethod('connect'.toJS, gain);
+      gain.callMethod('connect'.toJS, ctx.getProperty('destination'.toJS));
+      final freq = osc.getProperty('frequency'.toJS) as JSObject;
+      freq.setProperty('value'.toJS, (660.0).toJS);
+      final gainParam = gain.getProperty('gain'.toJS) as JSObject;
+      gainParam.setProperty('value'.toJS, (0.25).toJS);
+      osc.callMethod('start'.toJS, now.toJS);
+      osc.callMethod('stop'.toJS, (now + 0.08).toJS);
+    } catch (_) {}
+  }
+
   static void _vibrate() {
     try {
       final nav = globalContext.getProperty('navigator'.toJS) as JSObject;
