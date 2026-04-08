@@ -11,63 +11,47 @@ import '../../../services/providers.dart';
 import 'add_measurement_dialog.dart';
 
 // ---------------------------------------------------------------------------
-// Providers
+// Screen — uses ConsumerStatefulWidget with manual loading (like HistoryScreen)
 // ---------------------------------------------------------------------------
 
-final _measurementsProvider =
-    FutureProvider<List<BodyMeasurement>>((ref) async {
-  final repo = ref.watch(measurementRepositoryProvider);
-  return repo.getAllMeasurements();
-});
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
-
-class MeasurementsScreen extends ConsumerWidget {
+class MeasurementsScreen extends ConsumerStatefulWidget {
   const MeasurementsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final measurementsAsync = ref.watch(_measurementsProvider);
+  ConsumerState<MeasurementsScreen> createState() => _MeasurementsScreenState();
+}
 
-    return Scaffold(
-      body: SafeArea(
-        child: measurementsAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
-          error: (e, _) => Center(
-            child: Text(
-              'Errore caricamento misure: $e',
-              style: const TextStyle(color: AppColors.error),
-            ),
-          ),
-          data: (measurements) => _MeasurementsBody(measurements: measurements),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text(
-          'Aggiungi',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        onPressed: () => _showAddDialog(context, ref, null),
-      ),
-    );
+class _MeasurementsScreenState extends ConsumerState<MeasurementsScreen> {
+  List<BodyMeasurement> _measurements = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
   }
 
-  Future<void> _showAddDialog(
-    BuildContext context,
-    WidgetRef ref,
-    BodyMeasurement? prefill,
-  ) async {
-    final repo = ref.read(measurementRepositoryProvider);
-    final latest = prefill ?? await repo.getLatestMeasurement();
+  Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final repo = ref.read(measurementRepositoryProvider);
+      final data = await repo.getAllMeasurements();
+      if (mounted) {
+        setState(() { _measurements = data; _loading = false; });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() { _error = e.toString(); _loading = false; });
+      }
+    }
+  }
 
-    if (!context.mounted) return;
+  Future<void> _showAddDialog() async {
+    final repo = ref.read(measurementRepositoryProvider);
+    final latest = _measurements.isNotEmpty ? _measurements.first : null;
+
+    if (!mounted) return;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -77,10 +61,57 @@ class MeasurementsScreen extends ConsumerWidget {
         prefill: latest,
         onSave: (m) async {
           await repo.saveMeasurement(m);
-          ref.invalidate(_measurementsProvider);
+          _load();
         },
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.bgPrimary,
+      body: SafeArea(
+        child: _loading
+            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            : _error != null
+                ? Center(child: Text('Errore: $_error', style: const TextStyle(color: AppColors.error)))
+                : _MeasurementsBody(
+                    measurements: _measurements,
+                    onDelete: (m) => _confirmDelete(m),
+                  ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Aggiungi', style: TextStyle(fontWeight: FontWeight.w600)),
+        onPressed: _showAddDialog,
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(BodyMeasurement m) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.bgSecondary,
+        title: const Text('Eliminare questa misurazione?'),
+        content: Text(DateFormat('d MMMM yyyy', 'it').format(m.date)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Elimina', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      final repo = ref.read(measurementRepositoryProvider);
+      await repo.deleteMeasurement(m.id);
+      _load();
+    }
   }
 }
 
@@ -88,13 +119,14 @@ class MeasurementsScreen extends ConsumerWidget {
 // Body (scrollable content)
 // ---------------------------------------------------------------------------
 
-class _MeasurementsBody extends ConsumerWidget {
-  const _MeasurementsBody({required this.measurements});
+class _MeasurementsBody extends StatelessWidget {
+  const _MeasurementsBody({required this.measurements, required this.onDelete});
 
   final List<BodyMeasurement> measurements;
+  final void Function(BodyMeasurement) onDelete;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -164,7 +196,7 @@ class _MeasurementsBody extends ConsumerWidget {
                   final m = measurements[index];
                   return _MeasurementHistoryCard(
                     measurement: m,
-                    onDelete: () => _confirmDelete(context, ref, m),
+                    onDelete: () => onDelete(m),
                   );
                 },
                 childCount: measurements.length,
@@ -175,44 +207,6 @@ class _MeasurementsBody extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    WidgetRef ref,
-    BodyMeasurement measurement,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgElevated,
-        title: const Text(
-          'Elimina misurazione',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          'Eliminare la misurazione del ${DateFormat('dd/MM/yyyy').format(measurement.date)}?',
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annulla',
-                style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Elimina',
-                style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      final repo = ref.read(measurementRepositoryProvider);
-      await repo.deleteMeasurement(measurement.id);
-      ref.invalidate(_measurementsProvider);
-    }
-  }
 }
 
 // ---------------------------------------------------------------------------
