@@ -6,6 +6,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../models/models.dart';
 import '../../../services/providers.dart';
+import '../../../services/timer_notification.dart'
+    if (dart.library.js_interop) '../../../services/timer_notification_web.dart';
 import '../../../services/workout_plan_service.dart';
 import 'active_workout_screen.dart';
 import 'active_session_notifier.dart';
@@ -127,6 +129,28 @@ class _WorkoutSelectorState extends ConsumerState<_WorkoutSelector> {
                     isToday: isToday,
                     exerciseCount: day.exercises.length,
                     onStart: () async {
+                      // Confirmation dialog before starting workout
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppColors.bgSecondary,
+                          title: Text('Iniziare ${day.name}?'),
+                          content: Text('${day.exercises.length} esercizi${day.hasCardio ? ' + cardio' : ''}'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Annulla'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text('Inizia!', style: TextStyle(color: AppColors.success)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true || !context.mounted) return;
+                      // Unlock audio from user gesture context (iOS Safari)
+                      TimerNotification.unlockAudio();
                       await ref.read(activeSessionProvider.notifier).startSession(day);
                       if (context.mounted) {
                         await Navigator.push(

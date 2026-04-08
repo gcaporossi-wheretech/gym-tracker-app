@@ -32,8 +32,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   @override
   void initState() {
     super.initState();
-    // Unlock audio on first user gesture context (GYM-30)
-    TimerNotification.unlockAudio();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final session = ref.read(activeSessionProvider);
       if (session == null) {
@@ -58,6 +56,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   void _onSetCompleted(int exerciseIndex, int setIndex, double weight, int reps) {
+    // Unlock audio on first real user gesture (iOS Safari requires this)
+    TimerNotification.unlockAudio();
     ref.read(activeSessionProvider.notifier).logSet(
       exerciseIndex: exerciseIndex,
       setIndex: setIndex,
@@ -1056,6 +1056,20 @@ class _SetRowState extends State<_SetRow> {
           ? widget.set.actualReps.toString()
           : widget.set.plannedReps.toString(),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant _SetRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sync controllers when model changes (e.g. after fill-down)
+    if (!widget.set.completed && !oldWidget.set.completed) {
+      if (widget.set.weight > 0 && oldWidget.set.weight != widget.set.weight) {
+        _weightController.text = widget.set.weight.toStringAsFixed(1);
+      }
+      if (oldWidget.set.plannedReps != widget.set.plannedReps) {
+        _repsController.text = widget.set.plannedReps.toString();
+      }
+    }
   }
 
   @override

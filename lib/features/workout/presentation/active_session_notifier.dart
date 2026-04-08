@@ -60,10 +60,11 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
   Future<void> startSession(DayPlan dayPlan) async {
     // Cerca l'ultima sessione per questo workout
     final allSessions = await _sessionRepo.getAllSessions();
-    final lastSession = allSessions
+    final matchingSessions = allSessions
         .where((s) => s.dayPlanId == dayPlan.id && s.completed)
-        .toList();
-    final previous = lastSession.isNotEmpty ? lastSession.first : null;
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date)); // Most recent first
+    final previous = matchingSessions.isNotEmpty ? matchingSessions.first : null;
     final exercises = dayPlan.exercises.map((ep) {
       // Find previous weights for this exercise (GYM-23)
       ExerciseLog? prevExercise;

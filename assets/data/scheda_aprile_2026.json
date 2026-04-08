@@ -373,7 +373,7 @@
           "restSeconds": 60,
           "rpe": 7.5,
           "notes": "Corda ai lati della testa, fletti il busto.",
-          "exerciseType": "bodyweight"
+          "exerciseType": "weighted"
         },
         {
           "id": "wed-9",
@@ -638,7 +638,7 @@
           "restSeconds": 60,
           "rpe": 7.5,
           "notes": "Tieni disco 5kg al petto.",
-          "exerciseType": "bodyweight"
+          "exerciseType": "weighted"
         },
         {
           "id": "fri-10",
