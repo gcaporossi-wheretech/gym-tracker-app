@@ -181,6 +181,17 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
 
+          // Misure button
+          GlowButton(
+            label: 'Misure corporee',
+            icon: Icons.monitor_weight_outlined,
+            color: AppColors.success,
+            onPressed: () {
+              Navigator.pushNamed(context, '/measurements');
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+
           // Export button
           GlowButton(
             label: 'Esporta Dati',

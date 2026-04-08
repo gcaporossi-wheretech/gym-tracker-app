@@ -8,6 +8,8 @@ import 'features/history/presentation/history_screen.dart';
 import 'features/stats/presentation/stats_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
 import 'features/export/presentation/export_screen.dart';
+import 'features/profile/presentation/measurements_screen.dart';
+import 'repositories/hive_measurement_repository.dart';
 import 'repositories/hive_workout_plan_repository.dart';
 import 'repositories/hive_session_repository.dart';
 import 'services/providers.dart';
@@ -21,12 +23,15 @@ Future<void> main() async {
   await planRepo.init();
   final sessionRepo = HiveSessionRepository();
   await sessionRepo.init();
+  final measurementRepo = HiveMeasurementRepository();
+  await measurementRepo.init();
 
   runApp(
     ProviderScope(
       overrides: [
         workoutPlanRepositoryProvider.overrideWithValue(planRepo),
         sessionRepositoryProvider.overrideWithValue(sessionRepo),
+        measurementRepositoryProvider.overrideWithValue(measurementRepo),
       ],
       child: const GymTrackerApp(),
     ),
@@ -44,6 +49,7 @@ class GymTrackerApp extends StatelessWidget {
       theme: AppTheme.dark,
       routes: {
         '/export': (context) => const ExportScreen(),
+        '/measurements': (context) => const MeasurementsScreen(),
       },
       home: const MainShell(),
     );

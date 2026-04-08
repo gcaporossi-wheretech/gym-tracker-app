@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../repositories/measurement_repository.dart';
 import '../repositories/workout_plan_repository.dart';
 import '../repositories/session_repository.dart';
 import 'workout_plan_service.dart';
@@ -11,6 +12,10 @@ final workoutPlanRepositoryProvider = Provider<WorkoutPlanRepository>((ref) {
 });
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
+  throw UnimplementedError('Must be overridden at app startup');
+});
+
+final measurementRepositoryProvider = Provider<MeasurementRepository>((ref) {
   throw UnimplementedError('Must be overridden at app startup');
 });
 
