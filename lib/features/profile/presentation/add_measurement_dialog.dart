@@ -203,7 +203,7 @@ class _AddMeasurementDialogState extends State<AddMeasurementDialog> {
                           color: AppColors.primary, size: 18),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
-                        DateFormat('EEEE dd/MM/yyyy', 'it_IT')
+                        DateFormat('dd/MM/yyyy')
                             .format(_selectedDate),
                         style: const TextStyle(
                           color: AppColors.textPrimary,

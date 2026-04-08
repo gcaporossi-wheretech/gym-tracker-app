@@ -97,7 +97,7 @@ class _MeasurementsScreenState extends ConsumerState<MeasurementsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSecondary,
         title: const Text('Eliminare questa misurazione?'),
-        content: Text(DateFormat('d MMMM yyyy', 'it').format(m.date)),
+        content: Text(DateFormat('dd/MM/yyyy').format(m.date)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annulla')),
           TextButton(
@@ -544,7 +544,7 @@ class _MeasurementHistoryCardState extends State<_MeasurementHistoryCard> {
   @override
   Widget build(BuildContext context) {
     final m = widget.measurement;
-    final dateStr = DateFormat('EEEE dd/MM/yyyy', 'it_IT').format(m.date);
+    final dateStr = DateFormat('dd/MM/yyyy').format(m.date);
 
     return GlassmorphismCard(
       onTap: () => setState(() => _expanded = !_expanded),
