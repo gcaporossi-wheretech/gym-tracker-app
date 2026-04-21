@@ -4,7 +4,57 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../models/phase.dart';
 import '../../../services/providers.dart';
+
+/// Descrizioni dettagliate per ogni fase del programma
+const _phaseDetails = <int, ({String focus, List<String> changes, List<String> tips})>{
+  1: (
+    focus: 'Apprendere i movimenti e costruire forza base. Carichi moderati, alto volume di tecnica.',
+    changes: [
+      'Rep range 8-15 per serie',
+      'RPE 7-8 (2-3 rep in riserva)',
+      '90-120s di recupero tra serie',
+      'Focus tecnica e ROM completo',
+      'Cardio leggero (LISS) 1-2x/settimana',
+    ],
+    tips: [
+      'Non cercare il cedimento - lascia sempre 2 rep in canna',
+      'Registra il peso iniziale come baseline',
+      'Priorita: forma corretta > peso sollevato',
+    ],
+  ),
+  2: (
+    focus: 'Sviluppare forza e ipertrofia con carichi piu alti e tecniche di intensita.',
+    changes: [
+      '5x6 sui compound (panca, squat, stacco)',
+      'RPE 8-8.5 (1-2 rep in riserva)',
+      'Drop set su esercizi di isolamento',
+      'Recupero 2-3 min su compound',
+      '1 sessione HIIT + LISS',
+    ],
+    tips: [
+      'Aumenta progressivamente i carichi settimana per settimana',
+      'Le drop set: ultima serie -20% carico senza pausa',
+      'Aumenta proteine e carboidrati',
+    ],
+  ),
+  3: (
+    focus: 'Massima intensita e definizione. Tecniche avanzate e cardio aumentato.',
+    changes: [
+      'Rest-pause sui top set',
+      'Superserie antagoniste (petto+dorso, bicipiti+tricipiti)',
+      'RPE 8.5-9 (0-1 rep in riserva)',
+      '2 sessioni HIIT + 1 LISS a settimana',
+      'Recupero ridotto 60-90s',
+    ],
+    tips: [
+      'Rest-pause: cedimento, 15s pausa, altre rep fino a cedimento',
+      'Deficit calorico leggero per definizione',
+      'Settimana 4: deload per recupero completo',
+    ],
+  ),
+};
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -127,51 +177,61 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sm),
                   ...plan.phases.map((phase) {
                     final isCurrent = position?.phase?.number == phase.number;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: isCurrent ? AppColors.primary.withValues(alpha: 0.15) : AppColors.bgElevated,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                        border: isCurrent ? Border.all(color: AppColors.primary.withValues(alpha: 0.4)) : null,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 28,
-                            height: 28,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          onTap: () => _showPhaseDetails(context, phase, isCurrent),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.sm),
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isCurrent ? AppColors.primary : AppColors.textSecondary,
+                              color: isCurrent ? AppColors.primary.withValues(alpha: 0.15) : AppColors.bgElevated,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                              border: isCurrent ? Border.all(color: AppColors.primary.withValues(alpha: 0.4)) : null,
                             ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '${phase.number}',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
                               children: [
-                                Text(
-                                  phase.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: isCurrent ? AppColors.textPrimary : AppColors.textSecondary,
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isCurrent ? AppColors.primary : AppColors.textSecondary,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '${phase.number}',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
                                   ),
                                 ),
-                                Text(
-                                  'Settimane ${phase.weekStart}-${phase.weekEnd}',
-                                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        phase.name,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: isCurrent ? AppColors.textPrimary : AppColors.textSecondary,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Settimane ${phase.weekStart}-${phase.weekEnd}',
+                                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                      ),
+                                    ],
+                                  ),
                                 ),
+                                if (isCurrent)
+                                  const Icon(Icons.play_arrow, color: AppColors.primary, size: 18),
+                                const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 18),
                               ],
                             ),
                           ),
-                          if (isCurrent)
-                            const Icon(Icons.play_arrow, color: AppColors.primary, size: 18),
-                        ],
+                        ),
                       ),
                     );
                   }),
@@ -220,6 +280,226 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Bottom sheet con dettagli di una fase del programma
+void _showPhaseDetails(BuildContext context, Phase phase, bool isCurrent) {
+  final details = _phaseDetails[phase.number];
+
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusLg),
+        ),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.textSecondary.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Header with phase number
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isCurrent ? AppColors.primary : AppColors.bgElevated,
+                    border: Border.all(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${phase.number}',
+                    style: TextStyle(
+                      color: isCurrent ? Colors.white : AppColors.primary,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        phase.name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        'Settimane ${phase.weekStart}-${phase.weekEnd}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isCurrent)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    ),
+                    child: const Text(
+                      'IN CORSO',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Focus
+            if (details != null) ...[
+              const Text(
+                'OBIETTIVO',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                details.focus,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // What changes
+              const Text(
+                'COSA CAMBIA',
+                style: TextStyle(
+                  color: AppColors.warning,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ...details.changes.map((c) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('•  ',
+                        style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w700)),
+                    Expanded(
+                      child: Text(c,
+                          style: const TextStyle(
+                              color: AppColors.textPrimary, fontSize: 14, height: 1.4)),
+                    ),
+                  ],
+                ),
+              )),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Tips
+              const Text(
+                'CONSIGLI',
+                style: TextStyle(
+                  color: AppColors.success,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ...details.tips.map((t) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.lightbulb_outline,
+                        color: AppColors.success, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(t,
+                          style: const TextStyle(
+                              color: AppColors.textPrimary, fontSize: 14, height: 1.4)),
+                    ),
+                  ],
+                ),
+              )),
+              const SizedBox(height: AppSpacing.md),
+            ] else ...[
+              Text(
+                phase.description,
+                style: const TextStyle(
+                    color: AppColors.textPrimary, fontSize: 15, height: 1.4),
+              ),
+            ],
+
+            // Deload note
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.bgElevated,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline,
+                      color: AppColors.textSecondary, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Settimana ${phase.weekEnd}: deload (carichi -40%, volume -50%)',
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _InfoRow extends StatelessWidget {
