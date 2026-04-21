@@ -1177,14 +1177,19 @@ class _SetRowState extends State<_SetRow> {
 
           // Fill-down weight button (separate from TextField)
           if (widget.exerciseType == 'weighted' && !isCompleted)
-            SizedBox(
-              width: 28,
-              height: 36,
+            Container(
+              width: 40,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+              ),
               child: IconButton(
                 onPressed: _fillDownWeight,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.south, size: 16, color: AppColors.warning),
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 48),
+                icon: const Icon(Icons.south, size: 20, color: AppColors.warning),
                 tooltip: 'Applica kg a tutte',
               ),
             ),
@@ -1225,14 +1230,19 @@ class _SetRowState extends State<_SetRow> {
 
           // Fill-down reps button
           if (!isCompleted)
-            SizedBox(
-              width: 28,
-              height: 36,
+            Container(
+              width: 40,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+              ),
               child: IconButton(
                 onPressed: _fillDownReps,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.south, size: 16, color: AppColors.warning),
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 48),
+                icon: const Icon(Icons.south, size: 20, color: AppColors.warning),
                 tooltip: 'Applica rep a tutte',
               ),
             ),

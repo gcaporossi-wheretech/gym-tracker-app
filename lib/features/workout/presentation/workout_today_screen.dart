@@ -13,6 +13,8 @@ import 'active_workout_screen.dart';
 import 'active_session_notifier.dart';
 import 'edit_plan_screen.dart';
 
+enum _StartChoice { cancel, resume, newSession }
+
 class WorkoutTodayScreen extends ConsumerWidget {
   const WorkoutTodayScreen({super.key});
 
@@ -129,29 +131,53 @@ class _WorkoutSelectorState extends ConsumerState<_WorkoutSelector> {
                     isToday: isToday,
                     exerciseCount: day.exercises.length,
                     onStart: () async {
-                      // Confirmation dialog before starting workout
-                      final confirmed = await showDialog<bool>(
+                      // Check if there's already an active (in-progress) session for this dayPlan
+                      final active = ref.read(activeSessionProvider);
+                      final hasActiveSameDay = active != null
+                          && !active.isCompleted
+                          && active.session.dayPlanId == day.id;
+
+                      // Choose dialog message based on state
+                      final confirmed = await showDialog<_StartChoice>(
                         context: context,
                         builder: (ctx) => AlertDialog(
                           backgroundColor: AppColors.bgSecondary,
-                          title: Text('Iniziare ${day.name}?'),
-                          content: Text('${day.exercises.length} esercizi${day.hasCardio ? ' + cardio' : ''}'),
+                          title: Text(hasActiveSameDay
+                              ? '${day.name} in corso'
+                              : 'Iniziare ${day.name}?'),
+                          content: Text(hasActiveSameDay
+                              ? 'Hai una sessione in corso. Riprenderla o iniziarne una nuova (si perdono i dati)?'
+                              : '${day.exercises.length} esercizi${day.hasCardio ? ' + cardio' : ''}'),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
+                              onPressed: () => Navigator.pop(ctx, _StartChoice.cancel),
                               child: const Text('Annulla'),
                             ),
+                            if (hasActiveSameDay)
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, _StartChoice.newSession),
+                                child: const Text('Nuova', style: TextStyle(color: AppColors.warning)),
+                              ),
                             TextButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Inizia!', style: TextStyle(color: AppColors.success)),
+                              onPressed: () => Navigator.pop(ctx, hasActiveSameDay
+                                  ? _StartChoice.resume
+                                  : _StartChoice.newSession),
+                              child: Text(
+                                hasActiveSameDay ? 'Riprendi' : 'Inizia!',
+                                style: const TextStyle(color: AppColors.success),
+                              ),
                             ),
                           ],
                         ),
                       );
-                      if (confirmed != true || !context.mounted) return;
+                      if (confirmed == null || confirmed == _StartChoice.cancel) return;
+                      if (!context.mounted) return;
                       // Unlock audio from user gesture context (iOS Safari)
                       TimerNotification.unlockAudio();
-                      await ref.read(activeSessionProvider.notifier).startSession(day);
+                      if (confirmed == _StartChoice.newSession) {
+                        await ref.read(activeSessionProvider.notifier).startSession(day);
+                      }
+                      // If resume, just navigate - session is already in state
                       if (context.mounted) {
                         await Navigator.push(
                           context,
