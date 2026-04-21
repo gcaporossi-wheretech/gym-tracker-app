@@ -66,11 +66,17 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
       ..sort((a, b) => b.date.compareTo(a.date)); // Most recent first
     final previous = matchingSessions.isNotEmpty ? matchingSessions.first : null;
     final exercises = dayPlan.exercises.map((ep) {
-      // Find previous weights for this exercise (GYM-23)
+      // Find previous exercise by ID, or by name as fallback (GYM-23)
       ExerciseLog? prevExercise;
       if (previous != null) {
-        final matches = previous.exercises.where((e) => e.exercisePlanId == ep.id);
-        if (matches.isNotEmpty) prevExercise = matches.first;
+        final byId = previous.exercises.where((e) => e.exercisePlanId == ep.id);
+        if (byId.isNotEmpty) {
+          prevExercise = byId.first;
+        } else {
+          final byName = previous.exercises.where((e) =>
+              e.exerciseName.toLowerCase() == ep.name.toLowerCase());
+          if (byName.isNotEmpty) prevExercise = byName.first;
+        }
       }
 
       return ExerciseLog(
@@ -78,21 +84,30 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
         exerciseName: ep.name,
         muscleGroup: ep.muscleGroup,
         sets: List.generate(ep.sets, (i) {
-          // Pre-fill weight from last session's corresponding set
           double prefillWeight = ep.suggestedWeight;
-          if (prevExercise != null && i < prevExercise.sets.length) {
-            final prevSet = prevExercise.sets[i];
-            if (prevSet.completed && prevSet.weight > 0) {
-              prefillWeight = prevSet.weight;
+          int prefillReps = ep.reps;
+
+          if (prevExercise != null) {
+            // Try the corresponding set index first
+            SetLog? matchedSet;
+            if (i < prevExercise.sets.length) {
+              final candidate = prevExercise.sets[i];
+              if (candidate.completed) matchedSet = candidate;
             }
-          } else if (prevExercise != null && prevExercise.sets.isNotEmpty) {
-            // Use last available set weight
-            final lastCompleted = prevExercise.sets.where((s) => s.completed && s.weight > 0);
-            if (lastCompleted.isNotEmpty) prefillWeight = lastCompleted.last.weight;
+            // Fallback: last completed set from previous session
+            matchedSet ??= prevExercise.sets
+                .where((s) => s.completed)
+                .fold<SetLog?>(null, (prev, s) => s);
+
+            if (matchedSet != null) {
+              if (matchedSet.weight > 0) prefillWeight = matchedSet.weight;
+              if (matchedSet.actualReps > 0) prefillReps = matchedSet.actualReps;
+            }
           }
+
           return SetLog(
             setNumber: i + 1,
-            plannedReps: ep.reps,
+            plannedReps: prefillReps,
             weight: prefillWeight,
           );
         }),
