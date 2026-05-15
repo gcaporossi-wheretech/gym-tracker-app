@@ -46,4 +46,29 @@ class WorkoutSession with _$WorkoutSession {
       .expand((e) => e.sets)
       .where((s) => s.completed)
       .fold(0.0, (sum, s) => sum + (s.weight * s.actualReps));
+
+  /// Volume totale considerando il peso corporeo per esercizi bodyweight
+  /// (quando weight=0, usa bodyweight come carico effettivo).
+  double effectiveVolume(double bodyweight) {
+    return exercises
+        .where((e) => !e.skipped)
+        .expand((e) => e.sets)
+        .where((s) => s.completed)
+        .fold(0.0, (sum, s) {
+          final w = s.weight > 0 ? s.weight : bodyweight;
+          return sum + (w * s.actualReps);
+        });
+  }
+
+  /// Volume per gruppo muscolare con bodyweight fallback
+  double effectiveVolumeFor(String muscleGroup, double bodyweight) {
+    return exercises
+        .where((e) => e.muscleGroup == muscleGroup && !e.skipped)
+        .expand((e) => e.sets)
+        .where((s) => s.completed)
+        .fold(0.0, (sum, s) {
+          final w = s.weight > 0 ? s.weight : bodyweight;
+          return sum + (w * s.actualReps);
+        });
+  }
 }

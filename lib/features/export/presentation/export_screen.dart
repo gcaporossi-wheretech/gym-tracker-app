@@ -58,21 +58,27 @@ class ExportScreen extends ConsumerWidget {
 
             // JSON export
             GlassmorphismCard(
-              onTap: () {
-                sessionsAsync.whenData((sessions) {
-                  planAsync.whenData((plan) {
-                    final json = exportService.generateJson(
-                      sessions: sessions,
-                      plan: plan,
-                      currentWeek: position?.week ?? 1,
-                      currentPhase: position?.phase?.number ?? 1,
-                    );
-                    _downloadFile(json, 'gymtracker_export_${_dateStamp()}.json', 'application/json');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Export JSON scaricato!'), backgroundColor: AppColors.success),
-                    );
-                  });
-                });
+              onTap: () async {
+                final sessions = sessionsAsync.whenOrNull(data: (d) => d);
+                final plan = planAsync.whenOrNull(data: (d) => d);
+                if (sessions == null) return;
+                // Recupera ultimo peso corporeo per volume esercizi bodyweight
+                final measRepo = ref.read(measurementRepositoryProvider);
+                final latest = await measRepo.getLatestMeasurement();
+                final bodyweight = (latest?.weight ?? 0) > 0 ? latest!.weight : 75.0;
+                final json = exportService.generateJson(
+                  sessions: sessions,
+                  plan: plan,
+                  currentWeek: position?.week ?? 1,
+                  currentPhase: position?.phase?.number ?? 1,
+                  bodyweight: bodyweight,
+                );
+                _downloadFile(json, 'gymtracker_export_${_dateStamp()}.json', 'application/json');
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Export JSON scaricato!'), backgroundColor: AppColors.success),
+                  );
+                }
               },
               child: Row(
                 children: [

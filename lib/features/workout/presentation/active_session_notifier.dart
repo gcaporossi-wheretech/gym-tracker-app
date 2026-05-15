@@ -58,6 +58,9 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
 
   /// Avvia una nuova sessione dal DayPlan, con pre-fill pesi dall'ultima volta (GYM-23)
   Future<void> startSession(DayPlan dayPlan) async {
+    // Auto-finalizza sessioni orfane (con tutti i set loggati ma completed=false)
+    await _autoFinalizeOrphanSessions();
+
     // Cerca l'ultima sessione per questo workout
     final allSessions = await _sessionRepo.getAllSessions();
     // Consider both completed sessions AND sessions with at least one logged set.
@@ -331,12 +334,46 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     final s = state;
     if (s == null) return;
 
-    final duration = DateTime.now().difference(s.session.date).inMinutes;
+    final duration = _computeDuration(s.session);
     state = s.copyWith(
       session: s.session.copyWith(completed: true, durationMinutes: duration),
       isCompleted: true,
     );
     _save();
+  }
+
+  /// Finalizza automaticamente sessioni che hanno tutte le serie loggate
+  /// ma sono rimaste con completed=false (es. utente ha chiuso app senza
+  /// premere "Completa Workout"). Si applica solo a sessioni > 1 ora fa.
+  Future<void> _autoFinalizeOrphanSessions() async {
+    final all = await _sessionRepo.getAllSessions();
+    final cutoff = DateTime.now().subtract(const Duration(hours: 1));
+    for (final s in all) {
+      if (s.completed) continue;
+      if (s.date.isAfter(cutoff)) continue; // troppo recente, potrebbe essere in corso
+      // Tutti i set sono stati completati o l'esercizio e' skipped
+      final allDone = s.exercises.every((e) =>
+          e.skipped || (e.sets.isNotEmpty && e.sets.every((set) => set.completed)));
+      if (!allDone) continue;
+      final finalized = s.copyWith(
+        completed: true,
+        durationMinutes: _computeDuration(s),
+      );
+      await _sessionRepo.saveSession(finalized);
+    }
+  }
+
+  /// Calcola la durata reale del workout, evitando i valori anomali quando
+  /// l'utente lascia l'app aperta in background per ore (fix bug durate >24h).
+  /// Se l'intervallo da session.date a now > 4h, stima dai set completati
+  /// (~2 min/serie compresi recuperi).
+  int _computeDuration(WorkoutSession session) {
+    final elapsed = DateTime.now().difference(session.date).inMinutes;
+    const maxReasonable = 240; // 4 ore
+    if (elapsed <= maxReasonable && elapsed > 0) return elapsed;
+    final completedSets = session.totalCompletedSets;
+    if (completedSets == 0) return 60;
+    return (completedSets * 2).clamp(45, 180);
   }
 
   /// Undo: segna serie come non completata

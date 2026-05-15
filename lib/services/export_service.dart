@@ -5,12 +5,15 @@ import '../models/models.dart';
 /// Service per esportare i dati di allenamento in JSON e CSV.
 /// Il download effettivo avviene nel widget chiamante via callback.
 class ExportService {
-  /// Genera JSON completo delle sessioni
+  /// Genera JSON completo delle sessioni.
+  /// [bodyweight] usato come carico per esercizi a corpo libero (weight=0)
+  /// nel calcolo del volume effettivo.
   String generateJson({
     required List<WorkoutSession> sessions,
     required WorkoutPlan? plan,
     required int currentWeek,
     required int currentPhase,
+    double bodyweight = 75.0,
   }) {
     final data = {
       'exportDate': DateTime.now().toIso8601String(),
@@ -21,7 +24,7 @@ class ExportService {
       'currentPhase': currentPhase,
       'totalSessions': sessions.length,
       'sessions': sessions.map((s) => s.toJson()).toList(),
-      'progressionSummary': _buildSummary(sessions),
+      'progressionSummary': _buildSummary(sessions, bodyweight),
     };
 
     return const JsonEncoder.withIndent('  ').convert(data);
@@ -59,18 +62,25 @@ class ExportService {
     return buffer.toString();
   }
 
-  Map<String, dynamic> _buildSummary(List<WorkoutSession> sessions) {
+  Map<String, dynamic> _buildSummary(List<WorkoutSession> sessions, double bodyweight) {
     final completed = sessions.where((s) => s.completed).length;
     final totalVolume = sessions.fold(0.0, (sum, s) => sum + s.totalVolume);
+    final totalEffectiveVolume = sessions.fold(
+      0.0, (sum, s) => sum + s.effectiveVolume(bodyweight));
 
     final volumeByGroup = <String, double>{};
+    final effectiveVolumeByGroup = <String, double>{};
     for (final session in sessions) {
       for (final ex in session.exercises) {
         if (ex.skipped) continue;
         for (final set in ex.sets) {
           if (!set.completed) continue;
+          final raw = set.weight * set.actualReps;
+          final eff = (set.weight > 0 ? set.weight : bodyweight) * set.actualReps;
           volumeByGroup[ex.muscleGroup] =
-              (volumeByGroup[ex.muscleGroup] ?? 0) + (set.weight * set.actualReps);
+              (volumeByGroup[ex.muscleGroup] ?? 0) + raw;
+          effectiveVolumeByGroup[ex.muscleGroup] =
+              (effectiveVolumeByGroup[ex.muscleGroup] ?? 0) + eff;
         }
       }
     }
@@ -80,7 +90,10 @@ class ExportService {
       'completedSessions': completed,
       'completionRate': sessions.isNotEmpty ? completed / sessions.length : 0,
       'totalVolume': totalVolume,
+      'totalEffectiveVolume': totalEffectiveVolume,
+      'bodyweightUsed': bodyweight,
       'volumeByMuscleGroup': volumeByGroup,
+      'effectiveVolumeByMuscleGroup': effectiveVolumeByGroup,
     };
   }
 
