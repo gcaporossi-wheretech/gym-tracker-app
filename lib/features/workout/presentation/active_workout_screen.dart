@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -266,6 +268,14 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                         onApplyRepsToAll: (reps) {
                           ref.read(activeSessionProvider.notifier).applyRepsToAll(
                             exerciseIndex: index,
+                            reps: reps,
+                          );
+                        },
+                        onTypedChanged: (setIndex, {weight, reps}) {
+                          ref.read(activeSessionProvider.notifier).updateSetTyped(
+                            exerciseIndex: index,
+                            setIndex: setIndex,
+                            weight: weight,
                             reps: reps,
                           );
                         },
@@ -770,6 +780,7 @@ class _ExerciseSetTracker extends StatelessWidget {
     required this.onAddSet,
     required this.onApplyWeightToAll,
     required this.onApplyRepsToAll,
+    required this.onTypedChanged,
     required this.onSkip,
     required this.onUnskip,
     required this.onRemoveExercise,
@@ -786,6 +797,7 @@ class _ExerciseSetTracker extends StatelessWidget {
   final VoidCallback onAddSet;
   final void Function(double weight) onApplyWeightToAll;
   final void Function(int reps) onApplyRepsToAll;
+  final void Function(int setIndex, {double? weight, int? reps}) onTypedChanged;
   final VoidCallback onSkip;
   final VoidCallback onUnskip;
   final VoidCallback onRemoveExercise;
@@ -879,6 +891,7 @@ class _ExerciseSetTracker extends StatelessWidget {
               onRemoveSet: onRemoveSet,
               onApplyWeightToAll: onApplyWeightToAll,
               onApplyRepsToAll: onApplyRepsToAll,
+              onTypedChanged: onTypedChanged,
               exerciseType: plan.exerciseType,
             ),
             // Action buttons row
@@ -952,6 +965,7 @@ class _SetTable extends StatelessWidget {
     required this.onRemoveSet,
     required this.onApplyWeightToAll,
     required this.onApplyRepsToAll,
+    required this.onTypedChanged,
     this.exerciseType = 'weighted',
   });
 
@@ -962,6 +976,7 @@ class _SetTable extends StatelessWidget {
   final void Function(int setIndex) onRemoveSet;
   final void Function(double weight) onApplyWeightToAll;
   final void Function(int reps) onApplyRepsToAll;
+  final void Function(int setIndex, {double? weight, int? reps}) onTypedChanged;
   final String exerciseType;
 
   @override
@@ -1000,6 +1015,8 @@ class _SetTable extends StatelessWidget {
             onRemove: () => onRemoveSet(index),
             onApplyWeightToAll: onApplyWeightToAll,
             onApplyRepsToAll: onApplyRepsToAll,
+            onTypedChanged: ({weight, reps}) =>
+                onTypedChanged(index, weight: weight, reps: reps),
           );
         }),
       ],
@@ -1018,6 +1035,7 @@ class _SetRow extends StatefulWidget {
     required this.onRemove,
     required this.onApplyWeightToAll,
     required this.onApplyRepsToAll,
+    required this.onTypedChanged,
     this.canRemove = true,
     this.exerciseType = 'weighted',
   });
@@ -1030,6 +1048,9 @@ class _SetRow extends StatefulWidget {
   final VoidCallback onRemove;
   final void Function(double weight) onApplyWeightToAll;
   final void Function(int reps) onApplyRepsToAll;
+  /// Called when user types in weight/reps fields. Persists typed values
+  /// to the model (without marking the set as completed).
+  final void Function({double? weight, int? reps}) onTypedChanged;
   final bool canRemove;
   final String exerciseType;
 
@@ -1040,6 +1061,17 @@ class _SetRow extends StatefulWidget {
 class _SetRowState extends State<_SetRow> {
   late TextEditingController _weightController;
   late TextEditingController _repsController;
+  Timer? _persistDebounce;
+
+  void _scheduleTypedPersist() {
+    _persistDebounce?.cancel();
+    _persistDebounce = Timer(const Duration(milliseconds: 400), () {
+      if (!mounted || widget.set.completed) return;
+      final w = double.tryParse(_weightController.text.replaceAll(',', '.'));
+      final r = int.tryParse(_repsController.text);
+      widget.onTypedChanged(weight: w, reps: r);
+    });
+  }
 
   @override
   void initState() {
@@ -1074,6 +1106,7 @@ class _SetRowState extends State<_SetRow> {
 
   @override
   void dispose() {
+    _persistDebounce?.cancel();
     _weightController.dispose();
     _repsController.dispose();
     super.dispose();
@@ -1150,6 +1183,7 @@ class _SetRowState extends State<_SetRow> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 textAlign: TextAlign.center,
                 enabled: !isCompleted,
+                onChanged: (_) => _scheduleTypedPersist(),
                 onTap: () => _weightController.selection = TextSelection(
                   baseOffset: 0,
                   extentOffset: _weightController.text.length,
@@ -1203,6 +1237,7 @@ class _SetRowState extends State<_SetRow> {
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 enabled: !isCompleted,
+                onChanged: (_) => _scheduleTypedPersist(),
                 onTap: () => _repsController.selection = TextSelection(
                   baseOffset: 0,
                   extentOffset: _repsController.text.length,

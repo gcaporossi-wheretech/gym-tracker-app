@@ -60,11 +60,21 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
   Future<void> startSession(DayPlan dayPlan) async {
     // Cerca l'ultima sessione per questo workout
     final allSessions = await _sessionRepo.getAllSessions();
+    // Consider both completed sessions AND sessions with at least one logged set.
+    // This way pre-fill works even if the user forgot to "Completa Workout".
+    bool hasUserData(WorkoutSession s) =>
+        s.completed ||
+        s.exercises.any((e) => e.sets.any((set) =>
+            set.completed || set.weight > 0));
     final matchingSessions = allSessions
-        .where((s) => s.dayPlanId == dayPlan.id && s.completed)
+        .where((s) => s.dayPlanId == dayPlan.id && hasUserData(s))
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date)); // Most recent first
-    final previous = matchingSessions.isNotEmpty ? matchingSessions.first : null;
+    // Skip the current/active session itself if not completed
+    final currentActive = state?.session.id;
+    final previous = matchingSessions
+        .where((s) => s.id != currentActive)
+        .firstOrNull;
     final exercises = dayPlan.exercises.map((ep) {
       // Find previous exercise by ID, or by name as fallback (GYM-23)
       ExerciseLog? prevExercise;
@@ -88,20 +98,23 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
           int prefillReps = ep.reps;
 
           if (prevExercise != null) {
+            bool hasData(SetLog s) => s.completed || s.weight > 0 || s.actualReps > 0;
             // Try the corresponding set index first
             SetLog? matchedSet;
-            if (i < prevExercise.sets.length) {
-              final candidate = prevExercise.sets[i];
-              if (candidate.completed) matchedSet = candidate;
+            if (i < prevExercise.sets.length && hasData(prevExercise.sets[i])) {
+              matchedSet = prevExercise.sets[i];
             }
-            // Fallback: last completed set from previous session
+            // Fallback: last set with data from previous session
             matchedSet ??= prevExercise.sets
-                .where((s) => s.completed)
+                .where(hasData)
                 .fold<SetLog?>(null, (prev, s) => s);
 
             if (matchedSet != null) {
               if (matchedSet.weight > 0) prefillWeight = matchedSet.weight;
-              if (matchedSet.actualReps > 0) prefillReps = matchedSet.actualReps;
+              final repsValue = matchedSet.actualReps > 0
+                  ? matchedSet.actualReps
+                  : matchedSet.plannedReps;
+              if (repsValue > 0) prefillReps = repsValue;
             }
           }
 
@@ -135,6 +148,39 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     state = ActiveSessionState(
       session: reopened,
       warmupChecked: List.filled(warmupCount, true), // assume warmup was done
+    );
+    _save();
+  }
+
+  /// Aggiorna peso/reps tipate dall'utente SENZA marcare la serie completata.
+  /// Usato per persistere i valori che l'utente sta digitando, cosi non si
+  /// perdono se chiude l'app o navigando.
+  void updateSetTyped({
+    required int exerciseIndex,
+    required int setIndex,
+    double? weight,
+    int? reps,
+  }) {
+    final s = state;
+    if (s == null) return;
+    if (exerciseIndex < 0 || exerciseIndex >= s.session.exercises.length) return;
+
+    final exercises = List<ExerciseLog>.from(s.session.exercises);
+    final exercise = exercises[exerciseIndex];
+    if (setIndex < 0 || setIndex >= exercise.sets.length) return;
+
+    final sets = List<SetLog>.from(exercise.sets);
+    final current = sets[setIndex];
+    if (current.completed) return; // non toccare serie completate
+
+    sets[setIndex] = current.copyWith(
+      weight: weight ?? current.weight,
+      plannedReps: reps ?? current.plannedReps,
+    );
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+
+    state = s.copyWith(
+      session: s.session.copyWith(exercises: exercises),
     );
     _save();
   }
@@ -347,6 +393,7 @@ class ActiveSessionNotifier extends Notifier<ActiveSessionState?> {
     sets.add(SetLog(
       setNumber: sets.length + 1,
       plannedReps: lastSet.plannedReps,
+      weight: lastSet.weight, // copy weight too
     ));
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);
 
