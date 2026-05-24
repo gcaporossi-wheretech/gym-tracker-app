@@ -1061,45 +1061,90 @@ class _SetRow extends StatefulWidget {
 class _SetRowState extends State<_SetRow> {
   late TextEditingController _weightController;
   late TextEditingController _repsController;
+  late FocusNode _weightFocus;
+  late FocusNode _repsFocus;
   Timer? _persistDebounce;
 
   void _scheduleTypedPersist() {
     _persistDebounce?.cancel();
-    _persistDebounce = Timer(const Duration(milliseconds: 400), () {
-      if (!mounted || widget.set.completed) return;
-      final w = double.tryParse(_weightController.text.replaceAll(',', '.'));
-      final r = int.tryParse(_repsController.text);
-      widget.onTypedChanged(weight: w, reps: r);
+    // Debounce longer; the FocusNode listener will also persist on blur
+    _persistDebounce = Timer(const Duration(milliseconds: 1500), () {
+      _persistNow();
     });
+  }
+
+  void _persistNow() {
+    if (!mounted || widget.set.completed) return;
+    final w = double.tryParse(_weightController.text.replaceAll(',', '.'));
+    final r = int.tryParse(_repsController.text);
+    widget.onTypedChanged(weight: w, reps: r);
+  }
+
+  /// Compare model value to controller text semantically (parse both, compare numbers).
+  /// Returns true if they represent the same value, so we can skip resetting.
+  bool _weightMatches() {
+    final parsed = double.tryParse(_weightController.text.replaceAll(',', '.'));
+    if (parsed == null) return widget.set.weight == 0;
+    return (parsed - widget.set.weight).abs() < 0.01;
+  }
+
+  bool _repsMatches() {
+    final parsed = int.tryParse(_repsController.text);
+    if (parsed == null) return widget.set.plannedReps == 0;
+    return parsed == widget.set.plannedReps;
   }
 
   @override
   void initState() {
     super.initState();
-    _weightController = TextEditingController(
-      text: widget.set.completed
-          ? widget.set.weight.toStringAsFixed(1)
-          : widget.suggestedWeight > 0
-              ? widget.suggestedWeight.toStringAsFixed(1)
-              : '',
-    );
-    _repsController = TextEditingController(
-      text: widget.set.completed
-          ? widget.set.actualReps.toString()
-          : widget.set.plannedReps.toString(),
-    );
+    final initialWeight = widget.set.completed
+        ? widget.set.weight.toStringAsFixed(1)
+        : widget.set.weight > 0
+            ? widget.set.weight.toStringAsFixed(1)
+            : widget.suggestedWeight > 0
+                ? widget.suggestedWeight.toStringAsFixed(1)
+                : '';
+    final initialReps = widget.set.completed
+        ? widget.set.actualReps.toString()
+        : widget.set.plannedReps > 0
+            ? widget.set.plannedReps.toString()
+            : '';
+    _weightController = TextEditingController(text: initialWeight);
+    _repsController = TextEditingController(text: initialReps);
+    _weightFocus = FocusNode()..addListener(_onWeightFocusChange);
+    _repsFocus = FocusNode()..addListener(_onRepsFocusChange);
+  }
+
+  void _onWeightFocusChange() {
+    if (!_weightFocus.hasFocus) {
+      // Field lost focus: persist immediately
+      _persistDebounce?.cancel();
+      _persistNow();
+    }
+  }
+
+  void _onRepsFocusChange() {
+    if (!_repsFocus.hasFocus) {
+      _persistDebounce?.cancel();
+      _persistNow();
+    }
   }
 
   @override
   void didUpdateWidget(covariant _SetRow oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Sync controllers when model changes (e.g. after fill-down)
+    // Sync controllers only if the user is NOT currently typing in them.
+    // This avoids overwriting in-progress input during fill-down / Riverpod rebuilds.
     if (!widget.set.completed && !oldWidget.set.completed) {
-      if (widget.set.weight > 0 && oldWidget.set.weight != widget.set.weight) {
-        _weightController.text = widget.set.weight.toStringAsFixed(1);
+      if (!_weightFocus.hasFocus && !_weightMatches()) {
+        _weightController.text = widget.set.weight > 0
+            ? widget.set.weight.toStringAsFixed(1)
+            : '';
       }
-      if (oldWidget.set.plannedReps != widget.set.plannedReps) {
-        _repsController.text = widget.set.plannedReps.toString();
+      if (!_repsFocus.hasFocus && !_repsMatches()) {
+        _repsController.text = widget.set.plannedReps > 0
+            ? widget.set.plannedReps.toString()
+            : '';
       }
     }
   }
@@ -1107,6 +1152,10 @@ class _SetRowState extends State<_SetRow> {
   @override
   void dispose() {
     _persistDebounce?.cancel();
+    _weightFocus.removeListener(_onWeightFocusChange);
+    _repsFocus.removeListener(_onRepsFocusChange);
+    _weightFocus.dispose();
+    _repsFocus.dispose();
     _weightController.dispose();
     _repsController.dispose();
     super.dispose();
@@ -1180,10 +1229,12 @@ class _SetRowState extends State<_SetRow> {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: TextField(
                 controller: _weightController,
+                focusNode: _weightFocus,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 textAlign: TextAlign.center,
                 enabled: !isCompleted,
                 onChanged: (_) => _scheduleTypedPersist(),
+                onSubmitted: (_) => _persistNow(),
                 onTap: () => _weightController.selection = TextSelection(
                   baseOffset: 0,
                   extentOffset: _weightController.text.length,
@@ -1234,10 +1285,12 @@ class _SetRowState extends State<_SetRow> {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: TextField(
                 controller: _repsController,
+                focusNode: _repsFocus,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 enabled: !isCompleted,
                 onChanged: (_) => _scheduleTypedPersist(),
+                onSubmitted: (_) => _persistNow(),
                 onTap: () => _repsController.selection = TextSelection(
                   baseOffset: 0,
                   extentOffset: _repsController.text.length,
